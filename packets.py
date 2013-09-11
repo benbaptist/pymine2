@@ -5,7 +5,7 @@ class PacketSend:
 	def byte(self, a):
 		self.socket.send(struct.pack('>b', a))
 	def ubyte(self, a):
-		print "Packet: %s" % struct.pack('>B', a).encode('hex')
+		#print "Packet: %s" % struct.pack('>B', a).encode('hex')
 		self.socket.send(struct.pack('>B', a))
 	def short(self, a):
 		self.socket.send(struct.pack('>h', a))
@@ -43,6 +43,7 @@ class PacketSend:
 	def chat(self, text=''):
 		self.ubyte(0x03)
 		self.string16(json.dumps({'text':text}))
+		print json.dumps({'text':text})
 	def spawn_position(self, x=0, y=0, z=0):
 		self.ubyte(0x06)
 		self.int(x)
@@ -143,7 +144,7 @@ class PacketRecv:
 		return {'id': id, 'count': 0, 'damage': 0, 'nbt': ''}
 	def parse(self):
 		packet = struct.unpack('B', self.socket.recv(1))[0]
-		print 'received: %s' % struct.pack('B', packet).encode('hex')
+		#print 'received: %s' % struct.pack('B', packet).encode('hex')
 		if packet == 0x00:
 			return {'id': packet, 
 				'keepalive': self.int()

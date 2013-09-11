@@ -36,7 +36,7 @@ class Server:
 		for l in self.get_players():
 			l.packetSend.chat(u'\x00\xa7e%s has left the game' % (player.username))
 	def setup(self):
-		self.socket.bind(('0.0.0.0', 25530))
+		self.socket.bind(('0.0.0.0', self.configData['port']))
 		self.socket.listen(5)
 		
 		self.world = World(self)
@@ -46,14 +46,13 @@ class Server:
 			self.part(p)
 			time.sleep(0.5)
 			p.socket.close()
-			print p.username
 			p.abort = True
 		self.socket.close()
 	def listen(self):
-		print "Listening for clients on port 25565"
+		print "Listening for clients on port %s" % str(self.configData['port'])
 		while not self.abort:
 			client, addr = self.socket.accept()
-			print addr
+			#print addr
 			player = Prepare(client, addr, self.world, self)
 			t = threading.Thread(target=player.listen, args=())
 			t.start()
@@ -69,7 +68,8 @@ class Server:
 				'world-path': 'world',
 				'max-players': 20
 			}
-			self.motd = jsondata['motd']
+			self.configData = json.loads(jsondata)
+			#self.motd = jsondata['motd']
 			f = open('config.json', 'w')
 			f.write(json.dumps(jsondata, sort_keys=True, indent=4, separators=(',', ': ')))
 			f.close()

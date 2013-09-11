@@ -58,9 +58,15 @@ class Player:
 		try:
 			self.listen()
 		except Exception,err:
-			del self.server.players[self.username]
+			try:
+				del self.server.players[self.username]
+			except:
+				pass
 			print traceback.format_exc()
 			self.packetSend.kick('Internal Server Error')
+			self.abort = True
+			self.server.part(self)
+			time.sleep(1)
 		try:
 			self.username
 		except:
@@ -75,15 +81,6 @@ class Player:
 		t.start()
 		self.packetSend.chat(u'\x00\xa7aType /terrain to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
 		self.server.join(self)
-		#for xC in range(16):
-#			for zC in range(16):
-#				data = ''
-#				for x in range(16):
-#					for y in range(512):
-#						for z in range(16):
-#							data += '\x02'
-#				cData = zlib.compress(data)
-#				self.packetSend.chunk_data(x=xC, z=zC, groundup=True, primary_bit_map=31, add_bit_map=0, data=cData)
 		while not self.abort:
 			try:
 				packet = self.packetRecv.parse()
