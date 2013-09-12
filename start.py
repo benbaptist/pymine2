@@ -15,7 +15,6 @@ class Log:
 log = Log()
 
 server = server.Server(log)
-server.config()
 server.setup()
 try:
 	server.listen()

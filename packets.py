@@ -5,9 +5,10 @@ class PacketSend:
 	def byte(self, a):
 		self.socket.send(struct.pack('>b', a))
 	def ubyte(self, a):
-		#print "Packet: %s" % struct.pack('>B', a).encode('hex')
+		print "Packet: %s" % struct.pack('>B', a).encode('hex')
 		self.socket.send(struct.pack('>B', a))
 	def short(self, a):
+		print "SEND SHORT: %s" % str(a)
 		self.socket.send(struct.pack('>h', a))
 	def ushort(self, a):
 		self.socket.send(struct.pack('>H', a))
@@ -80,6 +81,11 @@ class PacketSend:
 		self.int(len(data))
 		self.boolean(sky_light)
 		self.socket.send(data)
+	def player_list_item(self, player_name='', online=True, ping=0):
+		self.ubyte(0xc9)
+		self.string16(player_name)
+		self.boolean(online)
+		self.short(ping)
 	def client_statuses(self, payload=0):
 		self.ubyte(0xcd)
 		self.byte(payload)
@@ -108,7 +114,9 @@ class PacketRecv:
 	def ubyte(self):
 		return struct.unpack('>B', self.socket.recv(1))[0]
 	def short(self):
-		return struct.unpack('>h', self.socket.recv(2))[0]
+		blah = self.socket.recv(2)
+		print "SHORT: %s" % str(struct.unpack('>h', blah)[0])
+		return struct.unpack('>h', blah)[0]
 	def int(self):
 		return struct.unpack('>i', self.socket.recv(4))[0]
 	def long(self):
@@ -144,7 +152,7 @@ class PacketRecv:
 		return {'id': id, 'count': 0, 'damage': 0, 'nbt': ''}
 	def parse(self):
 		packet = struct.unpack('B', self.socket.recv(1))[0]
-		#print 'received: %s' % struct.pack('B', packet).encode('hex')
+		print 'received: %s' % struct.pack('B', packet).encode('hex')
 		if packet == 0x00:
 			return {'id': packet, 
 				'keepalive': self.int()

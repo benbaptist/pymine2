@@ -15,7 +15,11 @@ class Prepare:
 			pass
 	def listen(self):
 		while True:
-			packet = self.packetRecv.parse()
+			try:
+				packet = self.packetRecv.parse()
+			except:
+				self.server.log.error('%s lost connection' % self.addr[0])
+				return False
 			if packet['id'] == 'invalid':
 				print "invalid packet ID %s" % str(struct.pack('B', packet['packet']).encode('hex'))
 				self.packetSend.kick('Invalid Packet %s' % str(struct.pack('B', packet['packet'])).encode('hex'))
@@ -23,6 +27,8 @@ class Prepare:
 				return False
 			if packet['id'] == 0x02:
 				self.username = packet['username']
+				if self.username in self.server.players:
+					self.server.players[self.username].disconnect(reason='Logged in from another location')
 				self.packetSend.login_request(entity_id=25, game_mode=1)
 				self.packetSend.spawn_position()
 				self.packetSend.map_chunk_bulk()
@@ -32,7 +38,7 @@ class Prepare:
 				#print packet['channel']
 				if packet['channel'] == 'MC|PingHos':
 				#print "its a poll!"
-					self.packetSend.kick(u'\u0000'.join([u'\xa71', '74', '1.6.2', self.server.configData['motd'], str(len(self.server.get_players())), str(self.server.configData['max-players'])]))
+					self.packetSend.kick(u'\u0000'.join([u'\xa71', '74', '1.6.2', self.server.config['motd'], str(len(self.server.get_players())), str(self.server.config['max-players'])]))
 					self.abort = True
 					return False
 		#id = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(16))
@@ -50,37 +56,38 @@ class Player:
 		self.id = id
 		self.packetRecv = packets.PacketRecv(socket)
 		self.packetSend = packets.PacketSend(socket)
+	def disconnect(self, reason=''):
+		self.abort = True
+		if len(reason) > 0:
+			self.packetSend.kick(reason)
+		self.server.part(self)
+		try:
+			del self.server.players[self.username]
+		except:
+			pass
 	def keepalive(self):
 		while not self.abort:
 			self.packetSend.keepalive(random.randrange(0, 99999))
-			time.sleep(1)
+			time.sleep(0.5)
 	def wrap(self):
 		try:
 			self.listen()
 		except Exception,err:
-			try:
-				del self.server.players[self.username]
-			except:
-				pass
 			print traceback.format_exc()
-			self.packetSend.kick('Internal Server Error')
-			self.abort = True
-			self.server.part(self)
-			time.sleep(1)
+			self.disconnect('Internal Server Error')
 		try:
 			self.username
 		except:
 			return False
-		del self.server.players[self.username]
-		self.abort = True
-		self.server.part(self)
-		time.sleep(1)
-		self.socket.close()
+		self.disconnect()
 	def listen(self):
 		t = threading.Thread(target=self.keepalive, args=())
 		t.start()
-		# This is where you do a MOTD.
-		self.packetSend.chat(u'\xa7aType /terrain to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
+		# This is where a MOTD would go
+		#self.packetSend.chat(u'\u00a7aType /terrain to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
+		for p in self.server.get_players():
+			self.packetSend.player_list_item(p.username, True, 0)
+		time.sleep(0.2)
 		self.server.join(self)
 		while not self.abort:
 			try:
@@ -101,6 +108,7 @@ class Player:
 						try: return packet['message'].split(' ')[i]
 						except: return ""
 					self.server.log.info("%s issued command: %s" % (self.username, packet['message']))
+					# temporary debug commands to figure out how SMP chunk data works
 					if a(0)[1:] == 'randblocks':
 						self.packetSend.chat('Filling world...')
 						for xC in range(16):
