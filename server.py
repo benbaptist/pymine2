@@ -30,11 +30,11 @@ class Server:
 	def join(self, player):
 		self.log.info('%s has joined the game' % player.username)
 		for l in self.get_players():
-			l.packetSend.chat(u'\x00\xa7e%s has joined the game' % (player.username))
+			l.packetSend.chat(u'\xa7e%s has joined the game' % (player.username))
 	def part(self, player):
 		self.log.info('%s has left the game' % player.username)
 		for l in self.get_players():
-			l.packetSend.chat(u'\x00\xa7e%s has left the game' % (player.username))
+			l.packetSend.chat(u'\xa7e%s has left the game' % (player.username))
 	def setup(self):
 		self.socket.bind(('0.0.0.0', self.configData['port']))
 		self.socket.listen(5)

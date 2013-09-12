@@ -79,7 +79,8 @@ class Player:
 	def listen(self):
 		t = threading.Thread(target=self.keepalive, args=())
 		t.start()
-		self.packetSend.chat(u'\x00\xa7aType /terrain to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
+		# This is where you do a MOTD.
+		self.packetSend.chat(u'\xa7aType /terrain to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
 		self.server.join(self)
 		while not self.abort:
 			try:
