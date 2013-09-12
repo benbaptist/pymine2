@@ -68,7 +68,7 @@ class Server:
 				'world-path': 'world',
 				'max-players': 20
 			}
-			self.configData = json.loads(jsondata)
+			self.configData = jsondata
 			#self.motd = jsondata['motd']
 			f = open('config.json', 'w')
 			f.write(json.dumps(jsondata, sort_keys=True, indent=4, separators=(',', ': ')))
