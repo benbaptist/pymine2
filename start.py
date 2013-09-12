@@ -19,5 +19,5 @@ server.setup()
 try:
 	server.listen()
 except KeyboardInterrupt:
-	print "Gracefully terminating"
+	log.info("Gracefully terminating")
 	server.close()

@@ -3,12 +3,13 @@ from chunk import Chunk
 	#def block(self, x, y, z):
 	#	x1 = 
 class World:
-	def __init__(self, server):
+	def __init__(self, server, path):
 		self.server = server
 		self.time = 0
 		self.seed = 0
 		self.chunks = []
 		self.entities = []
+		self.path = path
 		self.terrain = Terrain(self.seed)
 	def populate(self):
 		print "Populating world with chunks..."

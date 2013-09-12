@@ -61,6 +61,7 @@ class Player:
 		if len(reason) > 0:
 			self.packetSend.kick(reason)
 		self.server.part(self)
+		self.socket.close()
 		try:
 			del self.server.players[self.username]
 		except:
@@ -73,7 +74,9 @@ class Player:
 		try:
 			self.listen()
 		except Exception,err:
-			print traceback.format_exc()
+			error = traceback.format_exc()
+			for line in error.split('\n'):
+				self.server.log.error(line)
 			self.disconnect('Internal Server Error')
 		try:
 			self.username

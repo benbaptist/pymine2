@@ -47,14 +47,11 @@ class Server:
 		self.socket.bind(('0.0.0.0', self.config['port']))
 		self.socket.listen(5)
 		
-		self.world = World(self)
+		self.world = World(self, self.config['world-path'])
 		self.world.populate()
 	def close(self):
 		for p in self.get_players():
-			self.part(p)
-			time.sleep(0.5)
-			p.socket.close()
-			p.abort = True
+			p.disconnect('Server going down')
 		self.socket.close()
 	def listen(self):
 		print "Listening for clients on port %s" % str(self.config['port'])
