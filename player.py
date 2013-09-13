@@ -124,6 +124,7 @@ class Player:
                                     for y in range(512):
                                         for z in range(16):
                                             data += struct.pack('B', random.randrange(0, 30))
+                                self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=31, add_bit_map=0, data=cData)
                     
@@ -136,6 +137,7 @@ class Player:
                                     for y in range(256):
                                         for z in range(16):
                                             data += '\x02\x03\x03'
+                                self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=15, add_bit_map=0, data=cData)
                     
@@ -158,6 +160,7 @@ class Player:
                                             data += '\xff'
                                 for x in range(256):
                                     data += struct.pack('B', 21)
+                                self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
                     
@@ -181,6 +184,7 @@ class Player:
                                     for x in range(16):
                                         for z in range(16):
                                             data += '\xff'
+                                self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
                     
@@ -208,6 +212,7 @@ class Player:
                                     for x in range(16):
                                         for z in range(16):
                                             data += '\xff'
+                                self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
                     
@@ -220,6 +225,7 @@ class Player:
                                     for y in range(512):
                                         for z in range(16):
                                             data += '\x0a'
+                                self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=31, add_bit_map=0, data=cData)
                     
