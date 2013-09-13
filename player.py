@@ -127,7 +127,7 @@ class Player:
                                 self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=31, add_bit_map=0, data=cData)
-                    
+                        self.packetSend.chat(color_codes.green + 'Done filling world!')
                     elif command == "blocks":
                         self.packetSend.chat(color_codes.yellow + 'Filling world...')
                         self.packetSend.chat(color_codes.red + 'You will be held in position (to avoid getting stuck), please wait..')
@@ -165,7 +165,6 @@ class Player:
                                 self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
-
                         self.packetSend.chat(color_codes.green + 'Done filling world!')
                     elif command == 'layered':
                         self.packetSend.chat(color_codes.yellow + 'Filling world...')
@@ -191,7 +190,7 @@ class Player:
                                 self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
-                                self.packetSend.chat(color_codes.green + 'Done filling world!')
+                        self.packetSend.chat(color_codes.green + 'Done filling world!')
                     elif command == 'terrain':
                         self.packetSend.chat(color_codes.yellow + 'Filling world...')
                         self.packetSend.chat(color_codes.red + 'You will be held in position (to avoid getting stuck), please wait..')
@@ -220,7 +219,7 @@ class Player:
                                 self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
-                                self.packetSend.chat(color_codes.green + 'Done filling world!')
+                        self.packetSend.chat(color_codes.green + 'Done filling world!')
                     elif command == 'waterworld':
                         self.packetSend.chat(color_codes.yellow + 'Filling world...')
                         self.packetSend.chat(color_codes.red + 'You will be held in position (to avoid getting stuck), please wait..')
@@ -234,7 +233,7 @@ class Player:
                                 self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
                                 cData = zlib.compress(data)
                                 self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=31, add_bit_map=0, data=cData)
-                                self.packetSend.chat(color_codes.green + 'Done filling world!')
+                        self.packetSend.chat(color_codes.green + 'Done filling world!')
                     elif command == 'wack':
                         self.packetSend.chat(u'\xa7aType /blocks to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
                         #self.packetSend.chat(u'\xa7aWOOOOOOOOO space . {}[]\-0()1u43ofnkas')
