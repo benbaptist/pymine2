@@ -2,6 +2,7 @@ class Chunk:
 	def __init__(self):
 		#self.data = '\x00\x00\x00\x00\x00' * 4096 # 16-bit block ID, skylight, regular light, metadata byte
 		self.blocks = []
+		self.dirty = True
 		for y in range(256):
 			ly = []
 			for x in range(16):

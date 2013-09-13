@@ -49,12 +49,15 @@ class Server:
 		
 		self.world = World(self, self.config['world-path'])
 		self.world.populate()
+		t = threading.Thread(target=self.world.loop, args=())
+		t.start()
 	def close(self):
 		for p in self.get_players():
 			p.disconnect('Server going down')
 		self.socket.close()
+		self.abort = True
 	def listen(self):
-		print "Listening for clients on port %s" % str(self.config['port'])
+		self.log.info("Listening for clients on port %s" % str(self.config['port']))
 		while not self.abort:
 			client, addr = self.socket.accept()
 			#print addr
