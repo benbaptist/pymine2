@@ -68,7 +68,7 @@ class Player:
             pass
     def keepalive(self):
         while not self.abort:
-            self.packetSend.keepalive(random.randrange(0, 99999))
+            #self.packetSend.keepalive(random.randrange(0, 99999))
             time.sleep(0.5)
     def wrap(self):
         try:
@@ -87,7 +87,7 @@ class Player:
         t = threading.Thread(target=self.keepalive, args=())
         t.start()
         # This is where a MOTD would go
-        #self.packetSend.chat(u'\u00a7aType /terrain to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
+        self.packetSend.chat(u'\u00a7aType /terrain to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
         for p in self.server.get_players():
             self.packetSend.player_list_item(p.username, True, 0)
         time.sleep(0.2)
@@ -103,6 +103,7 @@ class Player:
                 self.packetSend.kick('Invalid Packet %s' % str(struct.pack('B', packet['packet'])).encode('hex'))
                 self.abort = True
                 break
+            self.packetSend.keepalive(random.randrange(0, 99999))
             if packet['id'] == 0x03:
                 #print "<%s> %s" % (self.username, packet['message'].encode('hex'))
                 if packet['message'][0] == '/':
