@@ -1,0 +1,18 @@
+section = u"\xa7" #167 hex
+
+black = section + "0"
+darkblue = section + "1"
+darkgreen = section + "2"
+darkaqua = section + "3"
+darkred = section + "4"
+darkpurple = section + "5"
+gold = section + "6"
+gray = section + "7"
+darkgray = section + "8"
+blue = section + "9"
+green = section + "a"
+aqua = section + "b"
+red = section + "c"
+lightpurple = section + "d"
+yellow = section + "e"
+white = section + "f"
