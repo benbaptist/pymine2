@@ -254,9 +254,9 @@ class Player:
 					else:
 						self.server.chat(self, packet['message'])
 					#self.packetSend.chat("<%s> %s" % (self.username, packet['message'].strip('\x00')))
-				if packet['id'] == 0x0d:
+				if packet['id'] == 0x0d or packet['id'] == 0x0b:
 					self.x = packet['x']
-					self.y = packet['y_stance']
+					self.y = packet['y_stance'] if packet['id'] == 0x0d else packet['y']
 					self.z = packet['z']
 					for player in self.getPlayersInRange(): # locate and determine if player is good
 						if player.username not in self.playersSent and player.username is not self.username:
