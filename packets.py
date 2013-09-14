@@ -5,10 +5,10 @@ class PacketSend:
 	def byte(self, a):
 		self.socket.send(struct.pack('>b', a))
 	def ubyte(self, a):
-		print "Packet: %s" % struct.pack('>B', a).encode('hex')
+		#print "Packet: %s" % struct.pack('>B', a).encode('hex')
 		self.socket.send(struct.pack('>B', a))
 	def short(self, a):
-		print "SEND SHORT: %s" % str(a)
+		#print "SEND SHORT: %s" % str(a)
 		self.socket.send(struct.pack('>h', a))
 	def ushort(self, a):
 		self.socket.send(struct.pack('>H', a))
@@ -59,6 +59,26 @@ class PacketSend:
 		self.float(yaw)
 		self.float(pitch)
 		self.boolean(on_ground)
+	def spawn_named_entity(self, entity_id=0, player_name='', x=0, y=0, z=0, yaw=0, pitch=0, current_item=0):
+		self.ubyte(0x14)
+		self.int(entity_id)
+		self.string16(player_name)
+		self.int(x)
+		self.int(y)
+		self.int(z)
+		self.byte(yaw)
+		self.byte(pitch)
+		self.short(current_item)
+		self.ubyte(0x00)
+		self.byte(0)
+	def entity_teleport(self, entity_id=0, x=0, y=0, z=0, yaw=0, pitch=0):
+		self.ubyte(0x22)
+		self.int(entity_id)
+		self.int(x)
+		self.int(y)
+		self.int(z)
+		self.byte(yaw)
+		self.byte(pitch)
 	def chunk_data(self, x=0, z=0, groundup=True, primary_bit_map=0, add_bit_map=0, data=''):
 		self.ubyte(0x33)
 		self.int(x)
@@ -152,7 +172,7 @@ class PacketRecv:
 		return {'id': id, 'count': 0, 'damage': 0, 'nbt': ''}
 	def parse(self):
 		packet = struct.unpack('B', self.socket.recv(1))[0]
-		print 'received: %s' % struct.pack('B', packet).encode('hex')
+		#print 'received: %s' % struct.pack('B', packet).encode('hex')
 		if packet == 0x00:
 			return {'id': packet, 
 				'keepalive': self.int()

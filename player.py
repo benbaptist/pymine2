@@ -54,12 +54,14 @@ class Player:
 		self.server = server
 		self.abort = False
 		self.id = id
+		self.entityID = random.randrange(0, 999999)
 		self.packetRecv = packets.PacketRecv(socket)
 		self.packetSend = packets.PacketSend(socket)
 		self.chunksSent = []
+		self.playersSent = []
 		self.player = {}
 	def info(self):
-    	  pass
+		pass
 	def disconnect(self, reason=''):
 		self.abort = True
 		if len(reason) > 0:
@@ -89,9 +91,10 @@ class Player:
 		self.disconnect()
 	def getPlayersInRange(self):
 		a = []
-		#for player in self.server.get_players():
-		#    playe
-    	      
+		for player in self.server.get_players():
+			x, y, z = player.x, player.y, player.z
+			if abs(x-self.x) < 200 and abs(z-self.z) < 200:
+				a.append(player)
 		return a
 	def listen(self):
 		t = threading.Thread(target=self.keepalive, args=())
@@ -253,9 +256,14 @@ class Player:
 					#self.packetSend.chat("<%s> %s" % (self.username, packet['message'].strip('\x00')))
 				if packet['id'] == 0x0d:
 					self.x = packet['x']
-					self.y = packet['y']
+					self.y = packet['y_stance']
 					self.z = packet['z']
-            	
-					self.getPlayersInRange()
+					for player in self.getPlayersInRange(): # locate and determine if player is good
+						if player.username not in self.playersSent and player.username is not self.username:
+							self.packetSend.spawn_named_entity(entity_id=self.entityID, player_name=self.username, x=self.x, y=self.y, z=self.z, current_item=278)
+							self.playersSent.append(player.username)
+					#for player in self.getPlayersInRange():
+					#	if self.username in player.playersSent and player.username is not self.username:
+					#		player.packetSend.entity_teleport(entity_id=self.entityID, x=self.x, y=self.y, z=self.z) 
 				if packet['id'] == 0xcc:
 					pass
