@@ -1,4 +1,4 @@
-import packets, struct, random, threading, time, traceback, zlib, string, color_codes
+import packets, struct, random, threading, time, traceback, zlib, string, color_codes, builtin_commands
 class Prepare:
 	def __init__(self, socket, addr, world, server):
 		self.socket = socket
@@ -128,6 +128,11 @@ class Player:
 						splitted = packet["message"].split()
 						command = splitted[0].lstrip("/")
 						arguments = splitted[1:]
+						#Running the command
+						
+						#New function interface
+						builtin_commands.run_command(self, command, arguments)
+						
 						# temporary debug commands to figure out how SMP chunk data works
 						if command == "randblocks":
 								self.packetSend.chat(color_codes.yellow + 'Filling world...')
