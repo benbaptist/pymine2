@@ -1,4 +1,4 @@
-import time, os, random, json
+import time, os, random, json, nbt
 from terrain import Terrain
 from chunk import Chunk
 	#def block(self, x, y, z):
