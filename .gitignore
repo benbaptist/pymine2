@@ -1,3 +1,4 @@
 *.pyc
 server.log
 config.json
+world

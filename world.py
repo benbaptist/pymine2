@@ -54,4 +54,4 @@ class World:
 		self.server.log.info('World tick loop begin')
 		while not self.server.abort:
 			self.level['time'] += 1
-			time.sleep(20/1000.0)
+			time.sleep(.05) # 20 ticks/second is 1/20 (.05) seconds per tick
