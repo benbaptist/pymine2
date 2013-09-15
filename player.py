@@ -35,9 +35,11 @@ class Prepare:
 					self.packetSend.player_position_look(ystance=256, stancey=256)
 					break
 				if packet['id'] == 0xfa:
-					#print packet['channel']
-					if packet['channel'] == 'MC|PingHos':
-					#print "its a poll!"
+					# This is where plugin channel handling goes.
+
+					# Channels that start with MC| are internal
+					# MC|PingHost is how the client's server list is populated with data. 
+					if packet['channel'] == 'MC|PingHost':
 						self.packetSend.kick(u'\u0000'.join([u'\xa71', '74', '1.6.2', self.server.config['motd'], str(len(self.server.get_players())), str(self.server.config['max-players'])]))
 						self.abort = True
 						return False
