@@ -5,20 +5,22 @@ def help_command(player, arguments):
     num_args = len(arguments)
 
     if not num_args:
-        # No arguments, list commands.
+        # No arguments, show general help.
         send("pymine2 Help")
         send("============")
         send("Welcome to pymine2, a Python-based MC server.")
         send("")
         send("To get a list of commands, please use /help commands.")
     else:
-        # There are arguments, so display help message.
-        send("pymine2 Commands")
-        send("================")
-        send("/help")
-        send("/list")
-        send("/msg targetName message")
-
+        # There are arguments, so do a subcommand
+        if arguments[0] == "commands":
+            send("pymine2 Commands")
+            send("================")
+            send("/help")
+            send("/list")
+            send("/msg targetName message")
+        else:
+            send("No such subcommand!")
 def list_command(player, arguments):
     send = lambda x: player.packetSend.chat(x)
     send(str(len(player.server.get_players())) + " players online:")
@@ -26,12 +28,16 @@ def list_command(player, arguments):
 
 def msg_command(player, arguments):
     message = " ".join(arguments[1:])
-    player.server.find_player(arguments[0]).packetSend.chat(color_codes.yellow + player.username + " whispers to you: " + color_codes.white + message)
+    target = player.server.find_player(arguments[0])
+    if target:
+        target.packetSend.chat(color_codes.yellow + player.username + " whispers to you: " + color_codes.white + message)
+    else:
+        player.packetSend.chat(color_codes.red + "No such player " + arguments[0] + "!")
 
 command_mapping = {
-"help": help_command,
-"list": list_command,
-"msg": msg_command
+    "help": help_command,
+    "list": list_command,
+    "msg": msg_command
 }
 
 def run_command(player, command, arguments):

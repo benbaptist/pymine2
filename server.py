@@ -24,7 +24,9 @@ class Server:
 				pass
 		return z
 	def find_player(self, username):
-		return [pl for pl in self.get_players() if pl.username == username][0]
+		for pl in self.get_players():
+			if pl.username == username:
+				return pl
 	def msg(self, msg):
 		for l in self.get_players():
 			l.packetSend.chat(u'%s' % msg)
