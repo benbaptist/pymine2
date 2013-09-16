@@ -130,12 +130,9 @@ class Player:
 						splitted = packet["message"].split()
 						command = splitted[0].lstrip("/")
 						arguments = splitted[1:]
-						#Running the command
-						
-						#New function interface
-						builtin_commands.run_command(self, command, arguments)
 						
 						# temporary debug commands to figure out how SMP chunk data works
+						# using 0x31s instead of a 0x38 could be causing the slow fill on client side
 						if command == "randblocks":
 								self.packetSend.chat(color_codes.yellow + 'Filling world...')
 								for xC in range(16):
@@ -258,6 +255,10 @@ class Player:
 						elif command == 'wack':
 								self.packetSend.chat(u'\xa7aType /blocks to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
 								self.packetSend.chat('Done.')
+						else: 
+							# New command interface.
+							# Putting this here prevents it from catching any of the commands still implemented here.
+							builtin_commands.run_command(self, command, arguments)
 					else:
 						self.server.chat(self, packet['message'])
 					#self.packetSend.chat("<%s> %s" % (self.username, packet['message'].strip('\x00')))
