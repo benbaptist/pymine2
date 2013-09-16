@@ -31,13 +31,13 @@ class Prepare:
 						self.server.players[self.username].disconnect(reason='Logged in from another location')
 					self.packetSend.login_request(entity_id=25, game_mode=1)
 					self.packetSend.spawn_position()
+					# Let's do some testing.. (Tests failed)
 					self.packetSend.map_chunk_bulk()
+					#chunk_bulk = open('packet0x38.bin', 'rb')
+					#self.socket.send(chunk_bulk.read())
 					self.packetSend.player_position_look(ystance=256, stancey=256)
 					break
 				if packet['id'] == 0xfa:
-					# This is where plugin channel handling goes.
-
-					# Channels that start with MC| are internal
 					# MC|PingHost is how the client's server list is populated with data. 
 					if packet['channel'] == 'MC|PingHost':
 						self.packetSend.kick(u'\u0000'.join([u'\xa71', '74', '1.6.2', self.server.config['motd'], str(len(self.server.get_players())), str(self.server.config['max-players'])]))
