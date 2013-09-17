@@ -39,7 +39,8 @@ class Prepare:
 					break
 				if packet['id'] == 0xfa:
 					# MC|PingHost is how the client's server list is populated with data. 
-					if packet['channel'] == 'MC|PingHost':
+					print packet['channel'][0:-1]
+					if packet['channel'].startswith('MC|PingHos'):
 						self.packetSend.kick(u'\u0000'.join([u'\xa71', '74', '1.6.2', self.server.config['motd'], str(len(self.server.get_players())), str(self.server.config['max-players'])]))
 						self.abort = True
 						return False
