@@ -30,12 +30,12 @@ class Prepare:
 					if self.username in self.server.players:
 						self.server.players[self.username].disconnect(reason='Logged in from another location')
 					self.packetSend.login_request(entity_id=25, game_mode=1)
-					self.packetSend.spawn_position()
+					self.packetSend.spawn_position(*self.world.spawnPoint)
 					# Let's do some testing.. (Tests failed)
 					self.packetSend.map_chunk_bulk()
 					#chunk_bulk = open('packet0x38.bin', 'rb')
 					#self.socket.send(chunk_bulk.read())
-					self.packetSend.player_position_look(ystance=256, stancey=256)
+					self.packetSend.player_position_look(x=self.world.spawnPoint[0], ystance=self.world.spawnPoint[1], stancey=self.world.spawnPoint[1], z=self.world.spawnPoint[2])
 					break
 				if packet['id'] == 0xfa:
 					# MC|PingHost is how the client's server list is populated with data. 
@@ -62,6 +62,9 @@ class Player:
 		self.chunksSent = []
 		self.playersSent = []
 		self.player = {}
+		self.x = self.world.spawnPoint[0]
+		self.y = self.world.spawnPoint[1]
+		self.z = self.world.spawnPoint[2]
 	def info(self):
 		pass
 	def disconnect(self, reason=''):
@@ -98,6 +101,39 @@ class Player:
 			if abs(x-self.x) < 200 and abs(z-self.z) < 200:
 				a.append(player)
 		return a
+	def getChunkPos(self):
+	    x = math.floor(self.x/16)
+	    z = math.floor(self.z/16)
+	    return (x, z)
+	def sendChunks(self, currentChunk, lastChunk=None):
+		for xC in range(16):
+			for zC in range(16):
+				#test if chunk is not within lastChunk's bounds (hasn't been sent before)
+				absX = currentChunk[0]-8+xC
+				absZ = currentChunk[1]-8+zC
+				if lastChunk == None or absX > lastChunk[0]+7 or absX < lastChunk[0]-8 or absZ > lastChunk[1]+7 or absZ < lastChunk[1]-8:
+					data = ''
+					for y in range(180):
+							for x in range(16):
+								for z in range(16):
+									data += struct.pack('B', 1)
+					for y in range(4):
+							for x in range(16):
+								for z in range(16):
+									data += struct.pack('B', 3)
+					for x in range(16):
+							for z in range(16):
+								data += struct.pack('B', 2)
+					for y in range(200):
+							for x in range(16):
+								for z in range(16):
+									data += '\xff'
+					for y in range(200):
+							for x in range(16):
+								for z in range(16):
+									data += '\xff'
+					cData = zlib.compress(data)
+					self.packetSend.chunk_data(x=currentChunk[0]+(xC-8), z=currentChunk[1]+(zC-8), groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
 	def listen(self):
 		t = threading.Thread(target=self.keepalive, args=())
 		t.start()
@@ -105,6 +141,9 @@ class Player:
 		self.packetSend.chat(u'\u00a7aType /terrain to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
 		for p in self.server.get_players():
 				self.packetSend.player_list_item(p.username, True, 0)
+		spawnChunk = self.getChunkPos()
+		self.sendChunks(spawnChunk)
+		self.packetSend.player_position_look(x=self.world.spawnPoint[0], ystance=self.world.spawnPoint[1], stancey=self.world.spawnPoint[1], z=self.world.spawnPoint[2])
 		time.sleep(0.2)
 		self.server.join(self)
 		while not self.abort:
@@ -266,9 +305,13 @@ class Player:
 						self.server.chat(self, packet['message'])
 					#self.packetSend.chat("<%s> %s" % (self.username, packet['message'].strip('\x00')))
 				if packet['id'] == 0x0d or packet['id'] == 0x0b:
+					lastChunk = self.getChunkPos()
 					self.x = packet['x']
 					self.y = packet['y_stance'] if packet['id'] == 0x0d else packet['y']
 					self.z = packet['z']
+					currentChunk = self.getChunkPos()
+					if lastChunk != currentChunk:
+						self.sendChunks(currentChunk, lastChunk)
 					for player in self.getPlayersInRange(): # locate and determine if player is good
 						if player.username not in self.playersSent and player.username is not self.username:
 							self.packetSend.spawn_named_entity(entity_id=self.entityID, player_name=self.username, x=self.x, y=self.y, z=self.z, current_item=278)
