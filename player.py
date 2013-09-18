@@ -65,6 +65,15 @@ class Player:
 		self.x = self.world.spawnPoint[0]
 		self.y = self.world.spawnPoint[1]
 		self.z = self.world.spawnPoint[2]
+		
+		#Ping calculation and keepalive variables.
+		self.ping = 0
+		
+		#Send the first keepalive.
+		self.last_keepalive_time = time.time()
+		self.last_sent_keepalive = random.randrange(0, 99999)
+		self.packetSend.keepalive(self.last_sent_keepalive)
+		
 	def info(self):
 		pass
 	def disconnect(self, reason=''):
@@ -84,7 +93,7 @@ class Player:
 	def wrap(self):
 		try:
 				self.listen()
-		except Exception,err:
+		except Exception, err:
 				error = traceback.format_exc()
 				for line in error.split('\n'):
 					self.server.log.error(line)
@@ -102,9 +111,9 @@ class Player:
 				a.append(player)
 		return a
 	def getChunkPos(self):
-	    x = math.floor(self.x/16)
-	    z = math.floor(self.z/16)
-	    return (x, z)
+		x = math.floor(self.x/16)
+		z = math.floor(self.z/16)
+		return (x, z)
 	def sendChunks(self, currentChunk, lastChunk=None):
 		for xC in range(16):
 			for zC in range(16):
@@ -161,6 +170,16 @@ class Player:
 				self.packetSend.keepalive(random.randrange(0, 99999))
 				#self.packetSend.time_update(random.randrange(25, 59), random.randrange(0, 12000))
 				self.packetSend.time_update(self.server.world.level['time'], math.floor((self.server.world.level['time'] / 24000.0) % 1 * 24000))
+				if packet['id'] == 0x00:
+					if packet['keepalive'] == self.last_sent_keepalive:
+						self.ping = time.time() - self.last_keepalive_time
+						self.last_keepalive_time = time.time()
+						self.last_sent_keepalive = random.randrange(0, 99999)
+						self.packetSend.keepalive(self.last_sent_keepalive)
+						self.packetSend.player_list_item(self.username, True, self.ping)
+					else:
+						self.disconnect("Wrong keepalive got.")
+				
 				if packet['id'] == 0x03:
 					#print "<%s> %s" % (self.username, packet['message'].encode('hex'))
 					if packet['message'][0] == '/':
