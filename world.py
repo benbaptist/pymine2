@@ -50,6 +50,10 @@ class World:
 					self.chunks[x] = {}
 				self.chunks[x][z] = self.terrain.generate(x, z)
 		return self.chunks[x][z]
+	def flush(self):
+		f = open('%s/level.dat' % self.path, 'w')
+		f.write(json.dumps(self.level))
+		f.close()
 	def loop(self):
 		self.server.log.info('World tick loop begin')
 		while not self.server.abort:

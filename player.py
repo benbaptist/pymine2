@@ -1,4 +1,4 @@
-import packets, struct, random, threading, time, traceback, zlib, string, color_codes, builtin_commands
+import packets, struct, random, threading, time, traceback, zlib, string, color_codes, builtin_commands, math
 class Prepare:
 	def __init__(self, socket, addr, world, server):
 		self.socket = socket
@@ -39,7 +39,6 @@ class Prepare:
 					break
 				if packet['id'] == 0xfa:
 					# MC|PingHost is how the client's server list is populated with data. 
-					print packet['channel'][0:-1]
 					if packet['channel'].startswith('MC|PingHos'):
 						self.packetSend.kick(u'\u0000'.join([u'\xa71', '74', '1.6.2', self.server.config['motd'], str(len(self.server.get_players())), str(self.server.config['max-players'])]))
 						self.abort = True
@@ -119,7 +118,10 @@ class Player:
 					self.packetSend.kick('Invalid Packet %s' % str(struct.pack('B', packet['packet'])).encode('hex'))
 					self.abort = True
 					break
+				#print (self.server.world.level['time'] / 24000.0)
 				self.packetSend.keepalive(random.randrange(0, 99999))
+				#self.packetSend.time_update(random.randrange(25, 59), random.randrange(0, 12000))
+				self.packetSend.time_update(self.server.world.level['time'], math.floor((self.server.world.level['time'] / 24000.0) % 1 * 24000))
 				if packet['id'] == 0x03:
 					#print "<%s> %s" % (self.username, packet['message'].encode('hex'))
 					if packet['message'][0] == '/':

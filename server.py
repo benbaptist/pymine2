@@ -60,6 +60,7 @@ class Server:
 			p.disconnect('Server going down')
 		self.socket.close()
 		self.abort = True
+		self.world.flush()
 	def listen(self):
 		self.log.info("Listening for clients on port %s" % str(self.config['port']))
 		while not self.abort:

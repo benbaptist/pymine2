@@ -28,7 +28,6 @@ class PacketSend:
 			self.byte(1)
 		else:
 			self.byte(0)
-	
 	def keepalive(self, id):
 		self.ubyte(0x00)
 		self.int(id)
@@ -44,7 +43,10 @@ class PacketSend:
 	def chat(self, text=''):
 		self.ubyte(0x03)
 		self.string16(json.dumps({'text':text}))
-		print json.dumps({'text':text})
+	def time_update(self, age_of_world=0, time_of_day=0):
+		self.ubyte(0x04)
+		self.long(age_of_world)
+		self.long(time_of_day)
 	def spawn_position(self, x=0, y=0, z=0):
 		self.ubyte(0x06)
 		self.int(x)
@@ -134,9 +136,7 @@ class PacketRecv:
 	def ubyte(self):
 		return struct.unpack('>B', self.socket.recv(1))[0]
 	def short(self):
-		blah = self.socket.recv(2)
-		print "SHORT: %s" % str(struct.unpack('>h', blah)[0])
-		return struct.unpack('>h', blah)[0]
+		return struct.unpack('>h', self.socket.recv(2))[0]
 	def int(self):
 		return struct.unpack('>i', self.socket.recv(4))[0]
 	def long(self):
