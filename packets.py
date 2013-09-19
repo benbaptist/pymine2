@@ -21,8 +21,24 @@ class PacketSend:
 	def double(self, a):
 		self.socket.send(struct.pack('>d', a))
 	def string16(self, a):
-		self.short(len(a))
-		self.socket.send(a.encode('utf-16be'))
+		colorCodes = ['a', 'b', 'c', 'd', 'e', 'f'] + range(10)
+		fs = u''; i = 0
+		while i < len(a):
+			b = a[i]
+			if b == '&':
+				c = a[i + 1]
+				if c in colorCodes:
+					fs += u'\xa7' + a[i + 1]
+					i += 1
+				elif c == "&":
+					fs += '&'
+				else:
+					fs += c
+			else:
+				fs += b
+			i += 1
+		self.short(len(fs))
+		self.socket.send(fs.encode('utf-16be'))
 	def boolean(self, a):
 		if a:
 			self.byte(1)

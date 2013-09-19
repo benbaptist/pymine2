@@ -1,4 +1,4 @@
-import packets, struct, random, threading, time, traceback, zlib, string, color_codes, builtin_commands, math
+import packets, struct, random, threading, time, traceback, zlib, string, builtin_commands, math
 class Prepare:
 	def __init__(self, socket, addr, world, server):
 		self.socket = socket
@@ -40,7 +40,7 @@ class Prepare:
 				if packet['id'] == 0xfa:
 					# MC|PingHost is how the client's server list is populated with data. 
 					if packet['channel'].startswith('MC|PingHos'):
-						self.packetSend.kick(u'\u0000'.join([u'\xa71', '74', '1.6.2', self.server.config['motd'], str(len(self.server.get_players())), str(self.server.config['max-players'])]))
+						self.packetSend.kick(u'\u0000'.join([u'\xa71', '74', '1.6.2', self.server.config['server-name'], str(len(self.server.get_players())), str(self.server.config['max-players'])]))
 						self.abort = True
 						return False
 		#id = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(16))
@@ -147,7 +147,8 @@ class Player:
 		t = threading.Thread(target=self.keepalive, args=())
 		t.start()
 		# This is where a MOTD would go
-		self.packetSend.chat(u'\u00a7aType /terrain to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
+		if len(self.server.config['motd']) > 1:
+			self.packetSend.chat(self.server.config['motd'])
 		for p in self.server.get_players():
 				self.packetSend.player_list_item(p.username, True, 0)
 		spawnChunk = self.getChunkPos()
@@ -196,7 +197,7 @@ class Player:
 						# temporary debug commands to figure out how SMP chunk data works
 						# using 0x31s instead of a 0x38 could be causing the slow fill on client side
 						if command == "randblocks":
-								self.packetSend.chat(color_codes.yellow + 'Filling world...')
+								self.packetSend.chat('&eFilling world...')
 								for xC in range(16):
 									for zC in range(16):
 										data = ''
@@ -207,10 +208,10 @@ class Player:
 										self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
 										cData = zlib.compress(data)
 										self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=31, add_bit_map=0, data=cData)
-								self.packetSend.chat(color_codes.green + 'Done filling world!')
+								self.packetSend.chat('&aDone filling world!')
 						elif command == "blocks":
-								self.packetSend.chat(color_codes.yellow + 'Filling world...')
-								self.packetSend.chat(color_codes.red + 'You will be held in position (to avoid getting stuck), please wait..')
+								self.packetSend.chat('&eFilling world...')
+								self.packetSend.chat('&cYou will be held in position (to avoid getting stuck), please wait..')
 								for xC in range(16):
 									for zC in range(16):
 										data = ''
@@ -221,10 +222,10 @@ class Player:
 										self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
 										cData = zlib.compress(data)
 										self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=15, add_bit_map=0, data=cData)
-								self.packetSend.chat(color_codes.green + 'Done filling world!')
+								self.packetSend.chat('&aDone filling world!')
 						elif command == 'tower':
-								self.packetSend.chat(color_codes.yellow + 'Filling world...')
-								self.packetSend.chat(color_codes.red + 'You will be held in position (to avoid getting stuck), please wait..')
+								self.packetSend.chat('&eFilling world...')
+								self.packetSend.chat('&cYou will be held in position (to avoid getting stuck), please wait..')
 								for xC in range(16):
 									for zC in range(16):
 										data = ''
@@ -245,10 +246,10 @@ class Player:
 										self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
 										cData = zlib.compress(data)
 										self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
-								self.packetSend.chat(color_codes.green + 'Done filling world!')
+								self.packetSend.chat('&aDone filling world!')
 						elif command == 'layered':
-								self.packetSend.chat(color_codes.yellow + 'Filling world...')
-								self.packetSend.chat(color_codes.red + 'You will be held in position (to avoid getting stuck), please wait..')
+								self.packetSend.chat('&eFilling world...')
+								self.packetSend.chat('&cYou will be held in position (to avoid getting stuck), please wait..')
 								for xC in range(16):
 									for zC in range(16):
 										data = ''
@@ -270,10 +271,10 @@ class Player:
 										self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
 										cData = zlib.compress(data)
 										self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
-								self.packetSend.chat(color_codes.green + 'Done filling world!')
+								self.packetSend.chat('&aDone filling world!')
 						elif command == 'terrain':
-								self.packetSend.chat(color_codes.yellow + 'Filling world...')
-								self.packetSend.chat(color_codes.red + 'You will be held in position (to avoid getting stuck), please wait..')
+								self.packetSend.chat('&eFilling world...')
+								self.packetSend.chat('&cYou will be held in position (to avoid getting stuck), please wait..')
 								for xC in range(16):
 									for zC in range(16):
 										data = ''
@@ -299,10 +300,10 @@ class Player:
 										self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
 										cData = zlib.compress(data)
 										self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
-								self.packetSend.chat(color_codes.green + 'Done filling world!')
+								self.packetSend.chat('&aDone filling world!')
 						elif command == 'waterworld':
-								self.packetSend.chat(color_codes.yellow + 'Filling world...')
-								self.packetSend.chat(color_codes.red + 'You will be held in position (to avoid getting stuck), please wait..')
+								self.packetSend.chat('&eFilling world...')
+								self.packetSend.chat('&cYou will be held in position (to avoid getting stuck), please wait..')
 								for xC in range(16):
 									for zC in range(16):
 										data = ''
@@ -313,9 +314,9 @@ class Player:
 										self.packetSend.player_position_look(x=0, ystance=260, z=0, on_ground=False) #Keep player from getting stuck
 										cData = zlib.compress(data)
 										self.packetSend.chunk_data(x=xC - 8, z=zC - 8, groundup=True, primary_bit_map=31, add_bit_map=0, data=cData)
-								self.packetSend.chat(color_codes.green + 'Done filling world!')
+								self.packetSend.chat('&aDone filling world!')
 						elif command == 'wack':
-								self.packetSend.chat(u'\xa7aType /blocks to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
+								self.packetSend.chat(u'&'+str(random.randrange(0,9))+'Type /blocks to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
 								self.packetSend.chat('Done.')
 						else: 
 							# New command interface.
