@@ -167,7 +167,7 @@ class Player:
 					self.abort = True
 					break
 				#print (self.server.world.level['time'] / 24000.0)
-				self.packetSend.keepalive(random.randrange(0, 99999))
+				#Keepalive gets sent once in __init__ and goes on when we receive another keepalive.
 				#self.packetSend.time_update(random.randrange(25, 59), random.randrange(0, 12000))
 				self.packetSend.time_update(self.server.world.level['time'], math.floor((self.server.world.level['time'] / 24000.0) % 1 * 24000))
 				if packet['id'] == 0x00:
@@ -179,7 +179,7 @@ class Player:
 						self.packetSend.player_list_item(self.username, True, self.ping)
 					else:
 						print "Got wrong keepalive " + str(packet['keepalive']) + " from " + self.username + " (expecting " + str(self.last_sent_keepalive) + ")"
-						#self.disconnect("Got wrong keepalive.")
+						self.disconnect("Got wrong keepalive.")
 				
 				if packet['id'] == 0x03:
 					#print "<%s> %s" % (self.username, packet['message'].encode('hex'))
