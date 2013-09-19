@@ -178,7 +178,8 @@ class Player:
 						self.packetSend.keepalive(self.last_sent_keepalive)
 						self.packetSend.player_list_item(self.username, True, self.ping)
 					else:
-						self.disconnect("Wrong keepalive got.")
+						print "Got wrong keepalive " + str(packet['keepalive']) + " from " + self.username
+						#self.disconnect("Got wrong keepalive.")
 				
 				if packet['id'] == 0x03:
 					#print "<%s> %s" % (self.username, packet['message'].encode('hex'))
