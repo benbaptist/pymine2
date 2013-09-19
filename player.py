@@ -178,7 +178,7 @@ class Player:
 						self.packetSend.keepalive(self.last_sent_keepalive)
 						self.packetSend.player_list_item(self.username, True, self.ping)
 					else:
-						print "Got wrong keepalive " + str(packet['keepalive']) + " from " + self.username
+						print "Got wrong keepalive " + str(packet['keepalive']) + " from " + self.username + " (expecting " + str(self.last_sent_keepalive) + ")"
 						#self.disconnect("Got wrong keepalive.")
 				
 				if packet['id'] == 0x03:
@@ -334,7 +334,7 @@ class Player:
 						self.sendChunks(currentChunk, lastChunk)
 					for player in self.getPlayersInRange(): # locate and determine if player is good
 						if player.username not in self.playersSent and player.username is not self.username:
-							self.packetSend.spawn_named_entity(entity_id=self.entityID, player_name=self.username, x=self.x, y=self.y, z=self.z, current_item=278)
+							self.packetSend.spawn_named_entity(entity_id=player.entityID, player_name=player.username, x=player.x, y=player.y, z=player.z, current_item=278, metadata={0: {"type": 0, "value": 0}})
 							self.playersSent.append(player.username)
 					#for player in self.getPlayersInRange():
 					#	if self.username in player.playersSent and player.username is not self.username:

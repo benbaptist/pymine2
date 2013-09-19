@@ -28,6 +28,29 @@ class PacketSend:
 			self.byte(1)
 		else:
 			self.byte(0)
+	def slot(self, a):
+		pass
+	def metadata(self, a):
+		for key, entry in a.iteritems():
+			byte = (key & 0x1F) | (entry["type"] << 5)
+			self.ubyte(byte)
+			if entry["type"] == 0:
+				self.byte(entry["value"])
+			elif entry["type"] == 1:
+				self.short(entry["value"])
+			elif entry["type"] == 2:
+				self.int(entry["value"])
+			elif entry["type"] == 3:
+				self.float(entry["value"])
+			elif entry["type"] == 4:
+				self.string16(entry["value"])
+			elif entry["type"] == 5:
+				self.slot(entry["value"])
+			elif entry["type"] == 6:
+				self.int(entry["value"][0])
+				self.int(entry["value"][1])
+				self.int(entry["value"][2])
+		self.ubyte(127)
 	def keepalive(self, id):
 		self.ubyte(0x00)
 		self.int(id)
@@ -61,7 +84,7 @@ class PacketSend:
 		self.float(yaw)
 		self.float(pitch)
 		self.boolean(on_ground)
-	def spawn_named_entity(self, entity_id=0, player_name='', x=0, y=0, z=0, yaw=0, pitch=0, current_item=0):
+	def spawn_named_entity(self, entity_id=0, player_name='', x=0, y=0, z=0, yaw=0, pitch=0, current_item=0, metadata={}):
 		self.ubyte(0x14)
 		self.int(entity_id)
 		self.string16(player_name)
@@ -71,8 +94,7 @@ class PacketSend:
 		self.byte(yaw)
 		self.byte(pitch)
 		self.short(current_item)
-		self.ubyte(0x00)
-		self.byte(0)
+		self.metadata(metadata)
 	def entity_teleport(self, entity_id=0, x=0, y=0, z=0, yaw=0, pitch=0):
 		self.ubyte(0x22)
 		self.int(entity_id)
@@ -170,6 +192,31 @@ class PacketRecv:
 				nbt = self.socket.recv(length)
 			return {'id': id, 'count': count, 'damage': damage, 'nbt': nbt}
 		return {'id': id, 'count': 0, 'damage': 0, 'nbt': ''}
+	def metadata(self):
+		metadata = {}
+		while True:
+			byte = self.ubyte()
+			if byte == 127:
+				break
+			key = byte & 0x1F
+			valueType = byte >> 5
+			entry = {"type": valueType}
+			if valueType == 0:
+				entry["value"] = self.byte()
+			elif valueType == 1:
+				entry["value"] = self.short()
+			elif valueType == 2:
+				entry["value"] = self.int()
+			elif valueType == 3:
+				entry["value"] = self.float()
+			elif valueType == 4:
+				entry["value"] = self.string16()
+			elif valueType == 5:
+				entry["value"] = self.slot()
+			elif valueType == 6:
+				entry["value"] = (self.int(), self.int(), self.int())
+			metadata[key] = entry
+		return metadata
 	def parse(self):
 		packet = struct.unpack('B', self.socket.recv(1))[0]
 		#print 'received: %s' % struct.pack('B', packet).encode('hex')
