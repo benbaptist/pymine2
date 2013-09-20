@@ -86,10 +86,6 @@ class Player:
 				del self.server.players[self.username]
 		except:
 				pass
-	def keepalive(self):
-		while not self.abort:
-				#self.packetSend.keepalive(random.randrange(0, 99999))
-				time.sleep(0.5)
 	def wrap(self):
 		try:
 				self.listen()
@@ -144,8 +140,6 @@ class Player:
 					cData = zlib.compress(data)
 					self.packetSend.chunk_data(x=currentChunk[0]+(xC-8), z=currentChunk[1]+(zC-8), groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
 	def listen(self):
-		t = threading.Thread(target=self.keepalive, args=())
-		t.start()
 		# This is where a MOTD would go
 		if len(self.server.config['motd']) > 1:
 			self.packetSend.chat(self.server.config['motd'])
@@ -186,9 +180,7 @@ class Player:
 					#print "<%s> %s" % (self.username, packet['message'].encode('hex'))
 					if packet['message'][0] == '/':
 						# The message is a command
-						def a(i):
-								try: return packet['message'].split(' ')[i]
-								except: return ""
+						
 						self.server.log.info("%s issued command: %s" % (self.username, packet['message']))
 						splitted = packet["message"].split()
 						command = splitted[0].lstrip("/")
