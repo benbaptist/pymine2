@@ -36,9 +36,11 @@ def msg_command(player, arguments):
 def time(player, arguments):
 	if arguments[0] == "set":
 		try:
-			tick = int(arguments[1])
+			desired_time = arguments[1].replace("day", str(0)).replace("night", str(12500))
+			tick = int(desired_time)
 			player.server.world.level['time'] = tick
-		except:
+		except Exception, e:
+			player.server.log.error(e)
 			player.packetSend.chat(color_codes.red + "Invalid time!")
 	elif arguments[0] == "add":
 		try:
