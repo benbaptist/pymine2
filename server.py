@@ -1,4 +1,4 @@
-import socket, threading, os, json, random, string, time
+import socket, threading, os, json, random, string, time, color_codes
 from player import Player
 from player import Prepare
 from world import World
@@ -28,8 +28,9 @@ class Server:
 			if pl.username == username:
 				return pl
 	def msg(self, msg):
+		color_coded_msg = color_codes.replace_color_codes(msg)
 		for l in self.get_players():
-			l.packetSend.chat(u'%s' % msg)
+			l.packetSend.chat(u'%s' % color_coded_msg)
 	def chat(self, player, message):
 		self.log.info('<%s> %s' % (player.username, message))
 		self.msg('<%s> %s' % (player.username, message))
