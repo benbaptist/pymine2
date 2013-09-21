@@ -171,7 +171,8 @@ class Player:
 						self.last_keepalive_time = time.time()
 						self.last_sent_keepalive = random.randrange(0, 99999)
 						self.packetSend.keepalive(self.last_sent_keepalive)
-						self.packetSend.player_list_item(self.username, True, self.ping)
+						for pl in self.server.get_players():
+							pl.packetSend.player_list_item(self.username, True, self.ping)
 					else:
 						print "Got wrong keepalive " + str(packet['keepalive']) + " from " + self.username + " (expecting " + str(self.last_sent_keepalive) + ")"
 						self.disconnect("Got wrong keepalive.")
