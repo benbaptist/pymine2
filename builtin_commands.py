@@ -33,7 +33,8 @@ def msg_command(player, arguments):
 		target.packetSend.chat(color_codes.yellow + player.username + " whispers to you: " + color_codes.white + message)
 	else:
 		player.packetSend.chat(color_codes.red + "No such player " + arguments[0] + "!")
-def time(player, arguments):
+
+def time_command(player, arguments):
 	if arguments[0] == "set":
 		try:
 			desired_time = arguments[1].replace("day", str(0)).replace("night", str(12500))
@@ -49,11 +50,16 @@ def time(player, arguments):
 		except:
 			player.packetSend.chat(color_codes.red + "Invalid time!")
 
+def me_command(player, arguments):
+	me_message = " ".join(arguments)
+	player.server.msg(color_codes.darkpurple + "* " + player.username + " " + me_message)
+
 command_mapping = {
 	"help": help_command,
 	"list": list_command,
 	"msg": msg_command,
-	"time": time
+	"time": time_command,
+	"me": me_command
 }
 
 def run_command(player, command, arguments):
