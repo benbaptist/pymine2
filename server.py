@@ -1,4 +1,4 @@
-import socket, threading, os, json, random, string, time, color_codes
+import socket, threading, os, json, random, string, time, color_codes, plugin
 from player import Player
 from player import Prepare
 from world import World
@@ -12,6 +12,9 @@ class Server:
 		self.players = {}
 		self.log = log
 		self.config = Config(log).config
+		self.EventManager = plugin.EventManager()
+		self.PluginManager = plugin.PluginManager(self)
+		self.PluginManager.load_plugins()
 		#self.chat = Chat(self)
 	def get_players(self):
 		z = []
@@ -34,6 +37,7 @@ class Server:
 	def chat(self, player, message):
 		self.log.info('<%s> %s' % (player.username, message))
 		self.msg('<%s> %s' % (player.username, message))
+		self.EventManager.chat_message_event(player, message)
 	def join(self, player):
 		self.log.info('%s has joined the game' % player.username)
 		for l in self.get_players():
