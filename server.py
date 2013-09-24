@@ -35,11 +35,12 @@ class Server:
 		for l in self.get_players():
 			l.packetSend.chat(u'%s' % color_coded_msg)
 	def chat(self, player, message):
+		message = self.EventManager.Chat_Message_Event(self, player, message)
 		self.log.info('<%s> %s' % (player.username, message))
 		self.msg('<%s> %s' % (player.username, message))
-		self.EventManager.chat_message_event(player, message)
 	def join(self, player):
 		self.log.info('%s has joined the game' % player.username)
+		self.EventManager.Player_Join_Event(self, time.time(), player)
 		for l in self.get_players():
 			if l.username == player.username:
 				continue
