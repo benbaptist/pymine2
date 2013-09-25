@@ -27,3 +27,17 @@ class PlayerJoinEventHandler(list):
         playerjoin = PlayerJoinEvent(server, jointime, player)
         for func in self:
             func(playerjoin)
+
+class PlayerMoveEvent:
+    def __init__(self, server, player, x, y, z):
+        self.server = server
+        self.player = player
+        self.x = x
+        self.y = y
+        self.z = z
+
+class PlayerMoveEventHandler(list):
+    def __call__(self, server, player, x, y, z):
+        playermove = PlayerMoveEvent(server, player, x, y, z)
+        for func in self:
+            func(playermove)

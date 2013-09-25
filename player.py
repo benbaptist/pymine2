@@ -323,6 +323,7 @@ class Player:
 					self.x = packet['x']
 					self.y = packet['y_stance'] if packet['id'] == 0x0d else packet['y']
 					self.z = packet['z']
+					self.server.EventManager.Player_Move_Event(self.server, self, self.x, self.y, self.z)
 					currentChunk = self.getChunkPos()
 					if lastChunk != currentChunk:
 						self.sendChunks(currentChunk, lastChunk)

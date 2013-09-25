@@ -5,6 +5,7 @@ class EventManager:
     def __init__(self):
         self.Chat_Message_Event = events.ChatMessageEventHandler()
         self.Player_Join_Event = events.PlayerJoinEventHandler()
+        self.Player_Move_Event = events.PlayerMoveEventHandler()
 
 class PluginManager:
     def __init__(self, server):
