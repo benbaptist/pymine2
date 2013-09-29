@@ -28,7 +28,10 @@ class Prepare:
 				if packet['id'] == 0x02:
 					self.username = packet['username']
 					if self.username in self.server.players:
-						self.server.players[self.username].disconnect(reason='Logged in from another location')
+						try:
+							self.server.players[self.username].disconnect(reason='Logged in from another location')
+						except:
+							pass
 					self.packetSend.login_request(entity_id=25, game_mode=1)
 					self.packetSend.spawn_position(*self.world.spawnPoint)
 					# Let's do some testing.. (Tests failed)
