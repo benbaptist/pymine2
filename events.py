@@ -17,16 +17,26 @@ class ChatMessageEventHandler(list):
         return chatmessage.message
 
 class PlayerJoinEvent:
-    def __init__(self, server, jointime, player):
+    def __init__(self, server, player):
         self.server = server
-        self.jointime = jointime
         self.player = player
 
 class PlayerJoinEventHandler(list):
-    def __call__(self, server, jointime, player):
-        playerjoin = PlayerJoinEvent(server, jointime, player)
+    def __call__(self, server, player):
+        playerjoin = PlayerJoinEvent(server, player)
         for func in self:
             func(playerjoin)
+
+class PlayerLeaveEvent:
+    def __init__(self, server, player):
+        self.server = server
+        self.player = player
+
+class PlayerLeaveEventHandler(list):
+    def __call__(self, server, player):
+        playerleave = PlayerLeaveEvent(server, player)
+        for func in self:
+            func(playerleave)
 
 class PlayerMoveEvent:
     def __init__(self, server, player, x, y, z):

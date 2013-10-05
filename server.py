@@ -40,7 +40,7 @@ class Server:
 		self.msg('<%s> %s' % (player.username, message))
 	def join(self, player):
 		self.log.info('%s has joined the game' % player.username)
-		self.EventManager.Player_Join_Event(self, time.time(), player)
+		self.EventManager.Player_Join_Event(self, player)
 		for l in self.get_players():
 			if l.username == player.username:
 				continue
