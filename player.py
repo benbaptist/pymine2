@@ -190,6 +190,8 @@ class Player:
 						command = splitted[0].lstrip("/")
 						arguments = splitted[1:]
 						
+						self.server.EventManager.Command_Event(self.server, self, command, arguments)
+						
 						# temporary debug commands to figure out how SMP chunk data works
 						# using 0x31s instead of a 0x38 could be causing the slow fill on client side
 						if command == "randblocks":
