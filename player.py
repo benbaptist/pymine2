@@ -102,13 +102,13 @@ class Player:
 		except:
 				return False
 		self.disconnect()
-	def getPlayersInRange(self):
-		a = []
+	def getPlayersInRange(self, range=200):
+		playersInRange = []
 		for player in self.server.get_players():
 			x, y, z = player.x, player.y, player.z
-			if abs(x-self.x) < 200 and abs(z-self.z) < 200:
-				a.append(player)
-		return a
+			if abs(x-self.x) < range and abs(z-self.z) < range:
+				playersInRange.append(player)
+		return playersInRange
 	def getChunkPos(self):
 		x = math.floor(self.x/16)
 		z = math.floor(self.z/16)
