@@ -51,3 +51,16 @@ class PlayerMoveEventHandler(list):
         playermove = PlayerMoveEvent(server, player, x, y, z)
         for func in self:
             func(playermove)
+
+class CommandEvent:
+    def __init__(self, server, player, command, arguments):
+        self.server = server
+        self.player = player
+        self.command = command
+        self.arguments = arguments
+
+class CommandEventHandler(list):
+    def __call__(self, server, player, command, arguments):
+        commandevent = CommandEvent(server, player, command, arguments)
+        for func in self:
+            func(commandevent)
