@@ -65,6 +65,8 @@ command_mapping = {
 def run_command(player, command, arguments):
 	try:
 		command_mapping[command](player, arguments)
+	except KeyError:
+		pass
 	except Exception, e:
 		player.packetSend.chat("Error while running command!")
 		print e
