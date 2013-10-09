@@ -7,6 +7,7 @@ class EventManager:
         self.Player_Join_Event = events.PlayerJoinEventHandler()
         self.Player_Leave_Event = events.PlayerLeaveEventHandler()
         self.Player_Move_Event = events.PlayerMoveEventHandler()
+        self.Command_Event = events.CommandEventHandler()
 
 class PluginManager:
     def __init__(self, server):
