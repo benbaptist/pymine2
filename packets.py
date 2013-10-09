@@ -125,7 +125,7 @@ class PacketSend:
 		self.int(len(data))
 		self.boolean(sky_light)
 		self.socket.send(data)
-	def named_sound_effect(self, sound_name, effect_x, effect_y, effect_z, volume=1, pitch=63):
+	def named_sound_effect(self, sound_name, effect_x, effect_y, effect_z, volume=100.0, pitch=1):
 		self.ubyte(0x3e)
 		self.string16(sound_name)
 		self.int(effect_x)
