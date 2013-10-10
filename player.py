@@ -167,6 +167,10 @@ class Player:
 				#print (self.server.world.level['time'] / 24000.0)
 				#Keepalive gets sent once in __init__ and goes on when we receive another keepalive.
 				#self.packetSend.time_update(random.randrange(25, 59), random.randrange(0, 12000))
+				
+				#Plugin API Packet Handler call.
+				self.server.EventManager.Packet_Recv_Event(self.server, self, packet)
+				
 				self.packetSend.time_update(self.server.world.level['time'], math.floor((self.server.world.level['time'] / 24000.0) % 1 * 24000))
 				if packet['id'] == 0x00:
 					if packet['keepalive'] == self.last_sent_keepalive:

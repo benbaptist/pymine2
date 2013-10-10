@@ -8,6 +8,7 @@ class EventManager:
         self.Player_Leave_Event = events.PlayerLeaveEventHandler()
         self.Player_Move_Event = events.PlayerMoveEventHandler()
         self.Command_Event = events.CommandEventHandler()
+        self.Packet_Recv_Event = events.PacketRecvEventHandler()
 
 class PluginManager:
     def __init__(self, server):

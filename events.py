@@ -64,3 +64,15 @@ class CommandEventHandler(list):
         commandevent = CommandEvent(server, player, command, arguments)
         for func in self:
             func(commandevent)
+
+class PacketRecvEvent:
+    def __init__(self, server, player, packet):
+        self.server = server
+        self.player = player
+        self.packet = packet
+
+class PacketRecvEventHandler(list):
+    def __call__(self, server, player, packet):
+        packetrecv = PacketRecvEvent(server, player, packet)
+        for func in self:
+            func(packetrecv)
