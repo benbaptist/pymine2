@@ -138,6 +138,9 @@ class PacketSend:
 		self.string16(player_name)
 		self.boolean(online)
 		self.short(ping)
+	def tab_complete(self, text_to_complete):
+		self.ubyte(0xCB)
+		self.string16(text_to_complete)
 	def client_statuses(self, payload=0):
 		self.ubyte(0xcd)
 		self.byte(payload)
