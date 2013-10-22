@@ -1,4 +1,4 @@
-import packets, struct, random, threading, time, traceback, zlib, string, builtin_commands, math
+import packets, struct, random, threading, time, traceback, zlib, string, builtin_commands, math, terrain_generators
 class Prepare:
 	def __init__(self, socket, addr, world, server):
 		self.socket = socket
@@ -102,11 +102,11 @@ class Player:
 		except:
 				return False
 		self.disconnect()
-	def getPlayersInRange(self, range=200):
+	def getPlayersInRange(self, max_range=200):
 		playersInRange = []
 		for player in self.server.get_players():
 			x, y, z = player.x, player.y, player.z
-			if abs(x-self.x) < range and abs(z-self.z) < range:
+			if abs(x-self.x) < max_range and abs(z-self.z) < max_range:
 				playersInRange.append(player)
 		return playersInRange
 	def getChunkPos(self):
@@ -142,6 +142,26 @@ class Player:
 									data += '\xff'
 					cData = zlib.compress(data)
 					self.packetSend.chunk_data(x=currentChunk[0]+(xC-8), z=currentChunk[1]+(zC-8), groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
+	def sendChunksWithTerrainGenerator(self, currentChunk, lastChunk=None):
+		for xC in range(16):
+			for zC in range(16):
+				#test if chunk is not within lastChunk's bounds (hasn't been sent before)
+				absX = currentChunk[0]-8+xC
+				absZ = currentChunk[1]-8+zC
+				if lastChunk == None or absX > lastChunk[0]+7 or absX < lastChunk[0]-8 or absZ > lastChunk[1]+7 or absZ < lastChunk[1]-8:
+					data = ''
+					generator = terrain_generators.FlatlandTerrainGenerator()
+					data += generator.generate_data()
+					for y in range(200):
+							for x in range(16):
+								for z in range(16):
+									data += '\xff'
+					for y in range(200):
+							for x in range(16):
+								for z in range(16):
+									data += '\xff'
+					cData = zlib.compress(data)
+					self.packetSend.chunk_data(x=currentChunk[0]+(xC-8), z=currentChunk[1]+(zC-8), groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
 	def listen(self):
 		# This is where a MOTD would go
 		if len(self.server.config['motd']) > 1:
@@ -149,7 +169,7 @@ class Player:
 		for p in self.server.get_players():
 				self.packetSend.player_list_item(p.username, True, 0)
 		spawnChunk = self.getChunkPos()
-		self.sendChunks(spawnChunk)
+		self.sendChunksWithTerrainGenerator(spawnChunk)
 		self.packetSend.player_position_look(x=self.world.spawnPoint[0], ystance=self.world.spawnPoint[1], stancey=self.world.spawnPoint[1], z=self.world.spawnPoint[2])
 		time.sleep(0.2)
 		self.server.join(self)
@@ -335,7 +355,7 @@ class Player:
 					self.server.EventManager.Player_Move_Event(self.server, self, self.x, self.y, self.z)
 					currentChunk = self.getChunkPos()
 					if lastChunk != currentChunk:
-						self.sendChunks(currentChunk, lastChunk)
+						self.sendChunksWithTerrainGenerator(currentChunk, lastChunk)
 					for player in self.getPlayersInRange(): # locate and determine if player is good
 						if player.username not in self.playersSent and player.username is not self.username:
 							self.packetSend.spawn_named_entity(entity_id=player.entityID, player_name=player.username, x=player.x, y=player.y, z=player.z, current_item=278, metadata={0: {"type": 0, "value": 0}})
