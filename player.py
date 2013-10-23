@@ -47,18 +47,17 @@ class Prepare:
 						self.abort = True
 						return False
 		#id = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(16))
-		self.server.players[self.username] = Player(self.socket, self.addr, self.world, self.server, id)
+		self.server.players[self.username] = Player(self.socket, self.addr, self.world, self.server)
 		t = threading.Thread(target=self.server.players[self.username].wrap, args=())
 		t.start()
 		self.server.players[self.username].username = self.username
 class Player:
-	def __init__(self, socket, addr, world, server, id):
+	def __init__(self, socket, addr, world, server):
 		self.socket = socket
 		self.addr = addr
 		self.world = world
 		self.server = server
 		self.abort = False
-		self.id = id
 		self.entityID = random.randrange(0, 999999)
 		self.packetRecv = packets.PacketRecv(socket)
 		self.packetSend = packets.PacketSend(socket)
@@ -162,6 +161,15 @@ class Player:
 									data += '\xff'
 					cData = zlib.compress(data)
 					self.packetSend.chunk_data(x=currentChunk[0]+(xC-8), z=currentChunk[1]+(zC-8), groundup=True, primary_bit_map=65535, add_bit_map=0, data=cData)
+	def sendChunksWithThreading(self, currentChunk, lastChunk=None):
+		threading.Thread(target=self.sendChunksWithTerrainGenerator, args=(currentChunk, lastChunk)).start()
+	def updatePos(self):
+		for player in self.getPlayersInRange(): # locate and determine if player is good
+			if player.username not in self.playersSent and player.username is not self.username:
+				self.packetSend.spawn_named_entity(entity_id=player.entityID, player_name=player.username, x=player.x, y=player.y, z=player.z, current_item=278, metadata={0: {"type": 0, "value": 0}})
+				self.playersSent.append(player.username)
+			if player.username in self.playersSent and player.username is not self.username:
+				player.packetSend.entity_teleport(entity_id=self.entityID, x=self.x*32, y=self.y*32, z=self.z*32)
 	def listen(self):
 		# This is where a MOTD would go
 		if len(self.server.config['motd']) > 1:
@@ -169,7 +177,7 @@ class Player:
 		for p in self.server.get_players():
 				self.packetSend.player_list_item(p.username, True, 0)
 		spawnChunk = self.getChunkPos()
-		self.sendChunksWithTerrainGenerator(spawnChunk)
+		self.sendChunksWithThreading(spawnChunk)
 		self.packetSend.player_position_look(x=self.world.spawnPoint[0], ystance=self.world.spawnPoint[1], stancey=self.world.spawnPoint[1], z=self.world.spawnPoint[2])
 		time.sleep(0.2)
 		self.server.join(self)
@@ -192,6 +200,7 @@ class Player:
 				self.server.EventManager.Packet_Recv_Event(self.server, self, packet)
 				
 				self.packetSend.time_update(self.server.world.level['time'], math.floor((self.server.world.level['time'] / 24000.0) % 1 * 24000))
+				self.updatePos()
 				if packet['id'] == 0x00:
 					if packet['keepalive'] == self.last_sent_keepalive:
 						self.ping = time.time() - self.last_keepalive_time
@@ -355,13 +364,6 @@ class Player:
 					self.server.EventManager.Player_Move_Event(self.server, self, self.x, self.y, self.z)
 					currentChunk = self.getChunkPos()
 					if lastChunk != currentChunk:
-						self.sendChunksWithTerrainGenerator(currentChunk, lastChunk)
-					for player in self.getPlayersInRange(): # locate and determine if player is good
-						if player.username not in self.playersSent and player.username is not self.username:
-							self.packetSend.spawn_named_entity(entity_id=player.entityID, player_name=player.username, x=player.x, y=player.y, z=player.z, current_item=278, metadata={0: {"type": 0, "value": 0}})
-							self.playersSent.append(player.username)
-					#for player in self.getPlayersInRange():
-					#	if self.username in player.playersSent and player.username is not self.username:
-					#		player.packetSend.entity_teleport(entity_id=self.entityID, x=self.x, y=self.y, z=self.z) 
+						self.sendChunksWithThreading(currentChunk, lastChunk)
 				if packet['id'] == 0xcc:
 					pass
