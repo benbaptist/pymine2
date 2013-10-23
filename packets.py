@@ -1,7 +1,8 @@
-import struct, json
+import struct, json, threading
 class PacketSend:
 	def __init__(self, socket):
 		self.socket = socket
+		self.lock = threading.Lock()
 	def byte(self, a):
 		self.socket.send(struct.pack('>b', a))
 	def ubyte(self, a):
@@ -52,110 +53,137 @@ class PacketSend:
 				self.int(entry["value"][2])
 		self.ubyte(127)
 	def keepalive(self, id):
-		self.ubyte(0x00)
-		self.int(id)
+		with self.lock:
+			self.ubyte(0x00)
+			self.int(id)
 	def login_request(self, entity_id=0, level_type='', game_mode=0, dimension=0, difficulty=0, max_players=20):
-		self.ubyte(0x01)
-		self.int(entity_id)
-		self.string16(level_type)
-		self.byte(game_mode)
-		self.byte(dimension)
-		self.byte(difficulty)
-		self.byte(0x00)
-		self.byte(max_players)
+		with self.lock:
+			self.ubyte(0x01)
+			self.int(entity_id)
+			self.string16(level_type)
+			self.byte(game_mode)
+			self.byte(dimension)
+			self.byte(difficulty)
+			self.byte(0x00)
+			self.byte(max_players)
 	def chat(self, text=''):
-		self.ubyte(0x03)
-		self.string16(json.dumps({'text':text}))
+		with self.lock:
+			self.ubyte(0x03)
+			self.string16(json.dumps({'text':text}))
 	def time_update(self, age_of_world=0, time_of_day=0):
-		self.ubyte(0x04)
-		self.long(age_of_world)
-		self.long(time_of_day)
+		with self.lock:
+			self.ubyte(0x04)
+			self.long(age_of_world)
+			self.long(time_of_day)
 	def spawn_position(self, x=0, y=0, z=0):
-		self.ubyte(0x06)
-		self.int(x)
-		self.int(y)
-		self.int(z)
+		with self.lock:
+			self.ubyte(0x06)
+			self.int(x)
+			self.int(y)
+			self.int(z)
 	def player_position_look(self, x=0, ystance=0, stancey=0, z=0, yaw=0, pitch=0, on_ground=True):
-		self.ubyte(0x0d)
-		self.double(x)
-		self.double(ystance)
-		self.double(stancey)
-		self.double(z)
-		self.float(yaw)
-		self.float(pitch)
-		self.boolean(on_ground)
+		with self.lock:
+			self.ubyte(0x0d)
+			self.double(x)
+			self.double(ystance)
+			self.double(stancey)
+			self.double(z)
+			self.float(yaw)
+			self.float(pitch)
+			self.boolean(on_ground)
 	def spawn_named_entity(self, entity_id=0, player_name='', x=0, y=0, z=0, yaw=0, pitch=0, current_item=0, metadata={}):
-		self.ubyte(0x14)
-		self.int(entity_id)
-		self.string16(player_name)
-		self.int(x)
-		self.int(y)
-		self.int(z)
-		self.byte(yaw)
-		self.byte(pitch)
-		self.short(current_item)
-		self.metadata(metadata)
+		with self.lock:
+			self.ubyte(0x14)
+			self.int(entity_id)
+			self.string16(player_name)
+			self.int(x)
+			self.int(y)
+			self.int(z)
+			self.byte(yaw)
+			self.byte(pitch)
+			self.short(current_item)
+			self.metadata(metadata)
+	def entity(self, entity_id):
+		with self.lock:
+			self.ubyte(0x1E)
+			self.int(entity_id)
+	def entity_look(self, entity_id, yaw=0, pitch=0):
+		with self.lock:
+			self.ubyte(0x20)
+			self.int(entity_id)
+			self.byte(yaw)
+			self.byte(pitch)
 	def entity_teleport(self, entity_id=0, x=0, y=0, z=0, yaw=0, pitch=0):
-		self.ubyte(0x22)
-		self.int(entity_id)
-		self.int(x)
-		self.int(y)
-		self.int(z)
-		self.byte(yaw)
-		self.byte(pitch)
+		with self.lock:
+			self.ubyte(0x22)
+			self.int(entity_id)
+			self.int(x)
+			self.int(y)
+			self.int(z)
+			self.byte(yaw)
+			self.byte(pitch)
 	def chunk_data(self, x=0, z=0, groundup=True, primary_bit_map=0, add_bit_map=0, data=''):
-		self.ubyte(0x33)
-		self.int(x)
-		self.int(z)
-		self.boolean(groundup)
-		self.ushort(primary_bit_map)
-		self.ushort(add_bit_map)
-		self.int(len(data))
-		self.socket.send(data)
+		with self.lock:
+			self.ubyte(0x33)
+			self.int(x)
+			self.int(z)
+			self.boolean(groundup)
+			self.ushort(primary_bit_map)
+			self.ushort(add_bit_map)
+			self.int(len(data))
+			self.socket.send(data)
 	def block_change(self, x=0, y=0, z=0, block_type=0, metadata=0):
-		self.ubyte(0x35)
-		self.int(x)
-		self.byte(y)
-		self.int(z)
-		self.short(block_type)
-		self.byte(metadata)
+		with self.lock:
+			self.ubyte(0x35)
+			self.int(x)
+			self.byte(y)
+			self.int(z)
+			self.short(block_type)
+			self.byte(metadata)
 	def map_chunk_bulk(self, chunk_col_count=0, sky_light=True, data='', meta=''):
-		self.ubyte(0x38)
-		self.short(chunk_col_count)
-		self.int(len(data))
-		self.boolean(sky_light)
-		self.socket.send(data)
+		with self.lock:
+			self.ubyte(0x38)
+			self.short(chunk_col_count)
+			self.int(len(data))
+			self.boolean(sky_light)
+			self.socket.send(data)
 	def named_sound_effect(self, sound_name, effect_x, effect_y, effect_z, volume=100.0, pitch=1):
-		self.ubyte(0x3e)
-		self.string16(sound_name)
-		self.int(effect_x)
-		self.int(effect_y)
-		self.int(effect_z)
-		self.float(volume)
-		self.byte(pitch)
+		with self.lock:
+			self.ubyte(0x3e)
+			self.string16(sound_name)
+			self.int(effect_x)
+			self.int(effect_y)
+			self.int(effect_z)
+			self.float(volume)
+			self.byte(pitch)
 	def player_list_item(self, player_name='', online=True, ping=0):
-		self.ubyte(0xc9)
-		self.string16(player_name)
-		self.boolean(online)
-		self.short(ping)
+		with self.lock:
+			self.ubyte(0xc9)
+			self.string16(player_name)
+			self.boolean(online)
+			self.short(ping)
 	def tab_complete(self, text_to_complete):
-		self.ubyte(0xCB)
-		self.string16(text_to_complete)
+		with self.lock:
+			self.ubyte(0xCB)
+			self.string16(text_to_complete)
 	def client_statuses(self, payload=0):
-		self.ubyte(0xcd)
-		self.byte(payload)
+		with self.lock:
+			self.ubyte(0xcd)
+			self.byte(payload)
 	def encryption_key_request(self, server_id='', public_key=b'', verify_token=b''):
-		self.ubyte(0xfd)
-		self.string16(server_id)
-		self.byte(len(public_key))
-		for i in public_key:
-			self.byte(i)
-		self.byte(len(verify_token))
-		for i in verify_token:
-			self.byte(i)
+		with self.lock:
+			self.ubyte(0xfd)
+			self.string16(server_id)
+			self.byte(len(public_key))
+			for i in public_key:
+				self.byte(i)
+				self.byte(len(verify_token))
+				for i in verify_token:
+					self.byte(i)
 	def kick(self, message):
-		self.ubyte(0xff)
-		self.string16(message)
+		with self.lock:
+			self.ubyte(0xff)
+			self.string16(message)
 	def send(self, packet):
 		print "sending %s" % str(packet[0])
 		if packet[0] == 0x03:
