@@ -8,7 +8,7 @@ class World:
 		self.server = server
 		self.chunks = {}
 		self.entities = []
-		self.spawnPoint = (8, 200, 8) #todo: use data from level.dat
+		self.spawnPoint = (8, 150, 8) #todo: use data from level.dat
 		self.path = path
 	def populate(self):
 		if not os.path.exists(self.path):
