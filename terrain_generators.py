@@ -23,6 +23,28 @@ class FlatlandTerrainGenerator:
             x[i] = z
         return x
     
+    def get_surrounding_blocks(self, y, x, z):
+        surrounding_blocks = []
+        try:
+            surrounding_blocks.append(self.y[y][x+1][z])
+            surrounding_blocks.append(self.y[y][x-1][z])
+            surrounding_blocks.append(self.y[y][x][z+1])
+            surrounding_blocks.append(self.y[y][x][z-1])
+            
+            surrounding_blocks.append(self.y[y+1][x+1][z])
+            surrounding_blocks.append(self.y[y+1][x-1][z])
+            surrounding_blocks.append(self.y[y+1][x][z+1])
+            surrounding_blocks.append(self.y[y+1][x][z-1])
+            
+            surrounding_blocks.append(self.y[y-1][x+1][z])
+            surrounding_blocks.append(self.y[y-1][x-1][z])
+            surrounding_blocks.append(self.y[y-1][x][z+1])
+            surrounding_blocks.append(self.y[y-1][x][z-1])
+        except TypeError:
+            pass
+        
+        return surrounding_blocks
+    
     def generate_data(self):
         data=''
         for y in xrange(256):
