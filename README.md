@@ -8,4 +8,5 @@ Linux, Mac OS X, Windows, Android and iOS.
 
 #Usage#
 To start the server, go to the server directory and run
-    python start.py
+
+> python start.py
