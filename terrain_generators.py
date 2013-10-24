@@ -10,7 +10,9 @@ class FlatlandTerrainGenerator:
         for i in xrange(16):
             z = [0]*16
             for i2 in xrange(16):
-                if y<60:
+                if y<1:
+                    z[i2] = 7
+                elif y<60:
                     z[i2] = random.choice([1,1,1,1,13,13,16])
                 elif y<65:
                     z[i2] = random.choice([1,1,1,13])
