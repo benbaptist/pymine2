@@ -2,28 +2,46 @@ import random, struct
 #Ugly code. Made just for quick development.
 class FlatlandTerrainGenerator:
     def __init__(self):
-        self.y = [0]*256
+        self.y = {}
         for y in xrange(256):
-            self.y[y] = self.generate_y(y)
+            self.y[y] = {}
+            for x in xrange(16):
+                self.y[y][x] = {}
+                for z in xrange(16):
+                    self.y[y][x][z] = 0
+        for y in xrange(256):
+            self.generate_y(y)
     def generate_y(self,y):
-        x = [0]*16
-        for i in xrange(16):
-            z = [0]*16
-            for i2 in xrange(16):
+        for x in xrange(16):
+            for z in xrange(16):
                 if y<1:
-                    z[i2] = 7
+                    self.y[y][x][z] = 7
                 elif y<60:
-                    z[i2] = random.choice([1,1,1,1,13,13,16])
+                    self.y[y][x][z] = random.choice([1,1,1,1,13,13,16])
                 elif y<65:
-                    z[i2] = random.choice([1,1,1,13])
+                    self.y[y][x][z] = random.choice([1,1,1,13])
                 elif y<70:
-                    z[i2] = random.choice([3,3,3,3,13])
+                    self.y[y][x][z] = random.choice([3,3,3,3,13])
                 elif y<71:
-                    z[i2] = random.choice([2 for _ in xrange(25)]+[12])
-                else:
-                    z[i2] = 0
-            x[i] = z
-        return x
+                    self.y[y][x][z] = random.choice([2 for _ in xrange(25)]+[12])
+                elif y<72:
+                    if random.randint(0,100) == 15 and 17 not in self.get_surrounding_blocks(y, x, z):
+                        self.y[y][x][z] = 17
+                elif y<73:
+                    if self.y[y-1][x][z] == 17:
+                        treelogs = random.randint(3,4)
+                        for treelog in xrange(treelogs):
+                            self.y[y+treelog][x][z] = 17
+                        for leaf in xrange(2):
+                            try:
+                                self.y[y+treelogs][x][z] = 18
+                                self.y[y+leaf+treelogs][x][z] = 18
+                                self.y[y+treelogs][x-leaf][z] = 18
+                                self.y[y+treelogs][x+leaf][z] = 18
+                                self.y[y+treelogs][x][z-leaf] = 18
+                                self.y[y+treelogs][x][z+leaf] = 18
+                            except KeyError:
+                                pass
     
     def get_surrounding_blocks(self, y, x, z):
         surrounding_blocks = []
@@ -43,6 +61,8 @@ class FlatlandTerrainGenerator:
             surrounding_blocks.append(self.y[y-1][x][z+1])
             surrounding_blocks.append(self.y[y-1][x][z-1])
         except TypeError:
+            pass
+        except KeyError:
             pass
         
         return surrounding_blocks
