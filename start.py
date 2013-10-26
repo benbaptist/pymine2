@@ -6,12 +6,15 @@ class PymineLogger:
 		self.log_queue = Queue.Queue()
 		threading.Thread(target=self.process_queue, args=()).start()
 	
+	def get_readable_time(self):
+		return time.strftime("%Y-%m-%d %H:%M:%S")
+	
 	def error(self, i):
-		line = u'[%s] [ERROR] %s' % (str(time.time()), i)
+		line = u'[%s] [ERROR] %s' % (str(self.get_readable_time()), i)
 		self.log_queue.put(line)
 	
 	def info(self, i):
-		line = u'[%s] [INFO] %s' % (str(time.time()), i)
+		line = u'[%s] [INFO] %s' % (str(self.get_readable_time()), i)
 		self.log_queue.put(line)
 	
 	def process_queue(self):
