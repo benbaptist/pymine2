@@ -1,4 +1,4 @@
-import packets, struct, random, threading, time, traceback, zlib, string, builtin_commands, math, terrain_generators
+import packets, struct, random, threading, time, traceback, zlib, string, builtin_commands, math, terrain_generators, chunk
 class Prepare:
 	def __init__(self, socket, addr, world, server):
 		self.socket = socket
@@ -17,7 +17,10 @@ class Prepare:
 		while True:
 				try:
 					packet = self.packetRecv.parse()
-				except:
+				except Exception, e:
+					error = traceback.format_exc()
+					for line in error.split('\n'):
+						self.server.log.error(line)
 					self.server.log.error('%s lost connection' % self.addr[0])
 					return False
 				if packet['id'] == 'invalid':
