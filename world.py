@@ -1,6 +1,6 @@
 import time, os, random, json, nbt
 from terrain import Terrain
-from chunk import Chunk
+from chunk import Chunk, JSONChunk
 	#def block(self, x, y, z):
 	#	x1 = 
 class World:
@@ -10,6 +10,9 @@ class World:
 		self.entities = []
 		self.spawnPoint = (8, 150, 8) #todo: use data from level.dat
 		self.path = path
+	def get_inmemory_chunk(self, x, z):
+		self.chunks[x+z*8] = JSONChunk()
+		return self.chunks[x+z*8]
 	def populate(self):
 		if not os.path.exists(self.path):
 			os.mkdir(self.path)
