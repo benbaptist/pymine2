@@ -20,16 +20,16 @@ class JSONChunk:
 		self.blocks = {}
 		for y in xrange(256):
 			self.blocks[y] = {}
-			for x in xrange(16):
-				self.blocks[y][x] = {}
-				for z in xrange(16):
-					self.blocks[y][x][z] = 0
+			for z in xrange(16):
+				self.blocks[y][z] = {}
+				for x in xrange(16):
+					self.blocks[y][z][x] = 0
 		self.dirty = False
 	def save_to_json(self):
 		return json.dumps(self.blocks)
 	def load_from_json(self, jsonstr):	
 		self.blocks = json.loads(jsonstr)
-	def get_block(self, y, x, z):
-		return self.blocks[y][x][z]
-	def set_block(self, y, x, z, block):
-		self.blocks[y][x][z] = block		
+	def get_block(self, y, z, x):
+		return self.blocks[y][z][x]
+	def set_block(self, y, z, x, block):
+		self.blocks[y][z][x] = block		
