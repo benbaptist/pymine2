@@ -115,9 +115,6 @@ class Player:
 		x = math.floor(self.x/16)
 		z = math.floor(self.z/16)
 		return (x, z)
-	def getCurrentChunk(self):
-		x, z = self.getChunkPos()
-		return self.world.chunks[x+z*8]
 	def sendChunks(self, currentChunk, lastChunk=None):
 		for xC in range(16):
 			for zC in range(16):
@@ -154,11 +151,9 @@ class Player:
 				absX = currentChunk[0]-8+xC
 				absZ = currentChunk[1]-8+zC
 				if lastChunk == None or absX > lastChunk[0]+7 or absX < lastChunk[0]-8 or absZ > lastChunk[1]+7 or absZ < lastChunk[1]-8:
-					worldchunk = self.world.get_inmemory_chunk(currentChunk[0], currentChunk[1])
-					chunkterrain = terrain_generators.FlatlandTerrainGenerator()
-					worldchunk.blocks = chunkterrain.y
 					data = ''
-					data += worldchunk.generate_data()
+					generator = terrain_generators.FlatlandTerrainGenerator()
+					data += generator.generate_data()
 					for y in range(200):
 							for x in range(16):
 								for z in range(16):

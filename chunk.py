@@ -1,4 +1,4 @@
-import json, struct
+import json
 class Chunk:
 	def __init__(self):
 		#self.data = '\x00\x00\x00\x00\x00' * 4096 # 16-bit block ID, skylight, regular light, metadata byte
@@ -32,11 +32,4 @@ class JSONChunk:
 	def get_block(self, y, z, x):
 		return self.blocks[y][z][x]
 	def set_block(self, y, z, x, block):
-		self.blocks[y][z][x] = block
-	def generate_data(self):
-		data=''
-		for y in xrange(256):
-			for z in range(16):
-				for x in range(16):
-					data += struct.pack('B', self.blocks[y][z][x])
-		return data		
+		self.blocks[y][z][x] = block		
