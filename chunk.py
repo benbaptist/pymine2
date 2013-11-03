@@ -17,9 +17,11 @@ class Chunk:
 
 class JSONChunk:
 	def __init__(self):
-		self.blocks = []
+		self.blocks = {}
 		for y in xrange(256):
+			self.blocks[y] = {}
 			for x in xrange(16):
+				self.blocks[y][x] = {}
 				for z in xrange(16):
 					self.blocks[y][x][z] = 0
 		self.dirty = False
