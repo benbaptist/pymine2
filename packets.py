@@ -6,10 +6,8 @@ class PacketSend:
 	def byte(self, a):
 		self.socket.send(struct.pack('>b', a))
 	def ubyte(self, a):
-		#print "Packet: %s" % struct.pack('>B', a).encode('hex')
 		self.socket.send(struct.pack('>B', a))
 	def short(self, a):
-		#print "SEND SHORT: %s" % str(a)
 		self.socket.send(struct.pack('>h', a))
 	def ushort(self, a):
 		self.socket.send(struct.pack('>H', a))
@@ -219,7 +217,6 @@ class PacketRecv:
 			return True
 	def slot(self):
 		id = self.short()
-		print id
 		if id == -1:
 			print "Empty slot!"
 		else:
