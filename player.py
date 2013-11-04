@@ -49,6 +49,7 @@ class Prepare:
 		#id = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(16))
 		self.server.players[self.username] = Player(self.socket, self.addr, self.world, self.server)
 		t = threading.Thread(target=self.server.players[self.username].wrap, args=())
+		t.daemon = True
 		t.start()
 		self.server.players[self.username].username = self.username
 class Player:
