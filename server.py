@@ -45,14 +45,14 @@ class Server:
 			if l.username == player.username:
 				continue
 			l.packetSend.player_list_item(player.username, True, 0)
-			l.packetSend.chat(u'\x00\xa7e%s has joined the game' % (player.username))
+			l.packetSend.chat(color_codes.yellow + u'%s has joined the game' % (player.username))
 	def part(self, player):
 		self.log.info('%s has left the game' % player.username)
 		for l in self.get_players():
 			if l.username == player.username:
 				continue
 			l.packetSend.player_list_item(player.username, False, 0)
-			l.packetSend.chat(u'\x00\xa7e%s has left the game' % (player.username))
+			l.packetSend.chat(color_codes.yellow + u'%s has left the game' % (player.username))
 	def setup(self):
 		self.socket.bind(('0.0.0.0', self.config['port']))
 		self.socket.listen(5)
