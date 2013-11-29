@@ -40,3 +40,5 @@ except KeyboardInterrupt:
 	log.info("Gracefully terminating")
 	log.stop()
 	server.close()
+except Exception, e:
+	log.error(e)
