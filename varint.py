@@ -1,6 +1,6 @@
 #From https://gist.github.com/nickelpro/7312782
 import struct
- 
+
 def pack_varint(val):
     total = b''
     if val < 0:
@@ -12,13 +12,13 @@ def pack_varint(val):
         bits = val&0x7F
         total += struct.pack('B', bits)
     return total
- 
+
 def unpack_varint(buff):
     total = 0
     shift = 0
     val = 0x80
     while val&0x80:
-        val = struct.unpack('B', bbuff.read(1))[0]
+        val = struct.unpack('B', buff.read(1))[0]
         total |= ((val&0x7F)<<shift)
         shift += 7
         if total&(1<<31):
