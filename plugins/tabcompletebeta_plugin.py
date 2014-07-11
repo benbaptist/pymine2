@@ -3,9 +3,9 @@ class tabcompletebeta:
     def __init__(self, server):
         self.server = server
         self.server.EventManager.Packet_Recv_Event.append(self.tabcomplete_got)
-    
+
     def tabcomplete_got(self, event):
-        if event.packet["id"] == 0xCB:
+        if event.packet["id"] == 0x14:
             text = event.packet["text"]
             last_word = text.split()[-1]
             if last_word[0] == "/":

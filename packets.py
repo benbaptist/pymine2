@@ -525,6 +525,14 @@ class PacketSend:
 		with self.lock:
 			self.ubyte(0x40)
 			self.string(reason)
+	def response(self, json_response=''):
+		with self.lock:
+			self.ubyte(0x00)
+			self.string(json_response)
+	def ping(self, time=0):
+		with self.lock:
+			self.ubyte(0x01)
+			self.long(time)
 	def client_statuses(self, payload=0):
 		with self.lock:
 			self.ubyte(0xcd)
@@ -539,6 +547,11 @@ class PacketSend:
 				self.byte(len(verify_token))
 				for i in verify_token:
 					self.byte(i)
+	def login_success(self, uuid='', username=''):
+		with self.lock:
+			self.ubyte(0x02)
+			self.string(uuid)
+			self.string(username)
 	def kick(self, message):
 		self.disconnect(message)
 	def send(self, packet):
@@ -555,20 +568,22 @@ class PacketRecv:
 		return struct.unpack('>B', self.socket.recv(1))[0]
 	def short(self):
 		return struct.unpack('>h', self.socket.recv(2))[0]
+	def ushort(self):
+		return struct.unpack('>H', self.socket.recv(2))[0]
 	def int(self):
 		return struct.unpack('>i', self.socket.recv(4))[0]
+	def varint(self):
+		return varint.unpack_varint(self.socket)
 	def long(self):
 		return struct.unpack('>q', self.socket.recv(8))[0]
 	def float(self):
 		return struct.unpack('>f', self.socket.recv(4))[0]
 	def double(self):
 		return struct.unpack('>d', self.socket.recv(8))[0]
-	def string16(self):
-		length = self.short() * 2
+	def string(self):
+		length = self.varint()
 		string = self.socket.recv(length)
-		#if len(string) < length:
-		#	raise Exception('Buffer Underrun')
-		return u'' + string.replace('\x00', '') # .decode('utf-16be')
+		return u'' + string.replace('\x00', '') # .decode('utf-8') <<?????
 	def boolean(self):
 		if self.byte() == 0x00:
 			return False
@@ -612,109 +627,61 @@ class PacketRecv:
 				entry["value"] = (self.int(), self.int(), self.int())
 			metadata[key] = entry
 		return metadata
-	def parse(self):
-		packet = struct.unpack('B', self.socket.recv(1))[0]
+	def parse(self, packet=0x00, parse_id=True):
+		if parse_id:
+			packet = struct.unpack('B', self.socket.recv(1))[0]
 		#print 'received: %s' % struct.pack('B', packet).encode('hex')
-		if packet == 0x00:
+		if packet == 0x00: # Keep Alive
 			return {'id': packet,
 				'keepalive': self.int()
 			}
-		if packet == 0x01:
+		if packet == 0x01: # Chat Message
 			return {'id': packet,
-				'entity_id': self.int(),
-				'level_type': self.string16(),
-				'game_mode': self.byte(),
-				'dimension': self.byte(),
-				'difficulty': self.byte(),
-				'not_used': self.byte(),
-				'max_players': self.byte()
+				'message': self.string()
 			}
-		if packet == 0x02:
+		if packet == 0x02: # Use Entity
 			return {'id': packet,
-				'protocol_version': self.byte(),
-				'username': self.string16(),
-				'server_host': self.string16(),
-				'server_port': self.int()
+				'target': self.int(),
+				'mouse': self.byte()
 			}
-		if packet == 0x03:
+		if packet == 0x03: # Player
 			return {'id': packet,
-				'message': self.string16()
+				'on_ground': self.boolean()
 			}
-		if packet == 0x04:
+		if packet == 0x04: # Player Position
 			return {'id': packet,
-				'age_of_world': self.long(),
-				'time_of_day': self.long()
+				'x': self.double(),
+				'feet_y': self.double(),
+				'head_y': self.double(),
+				'z': self.double(),
+				'on_ground': self.boolean()
 			}
-		if packet == 0x05:
+		if packet == 0x05: # Player Look
 			item = {}
 			return {'id': packet,
-				'entity_id': self.int(),
-				'slot': self.short(),
-				'item': item
-			}
-		if packet == 0x06:
-			return {'id': packet,
-				'x': self.int(),
-				'y': self.int(),
-				'z': self.int()
-			}
-		if packet == 0x07:
-			return {'id': packet,
-				'user': self.int(),
-				'target': self.int(),
-				'mouse_button': self.boolean()
-			}
-		if packet == 0x08:
-			return {'id': packet,
-				'health': self.float(),
-				'food': self.short(),
-				'food_saturation': self.float()
-			}
-		if packet == 0x09:
-			return {'id': packet,
-				'dimension': self.int(),
-				'difficulty': self.byte(),
-				'game_mode': self.byte(),
-				'world_height': self.short(),
-				'level_type': self.string16()
-			}
-		if packet == 0x0a:
-			return {'id': packet,
-				'on_ground': self.boolean()
-			}
-		if packet == 0x0b:
-			return {'id': packet,
-				'x': self.double(),
-				'y': self.double(),
-				'stance': self.double(),
-				'z': self.double(),
-				'on_ground': self.boolean()
-			}
-		if packet == 0x0c:
-			return {'id': packet,
 				'yaw': self.float(),
 				'pitch': self.float(),
 				'on_ground': self.boolean()
 			}
-		if packet == 0x0d:
+		if packet == 0x06: # Player Position And Look
 			return {'id': packet,
 				'x': self.double(),
-				'y_stance': self.double(),
-				'stance_y': self.double(),
+				'feet_y': self.double(),
+				'head_y': self.double(),
 				'z': self.double(),
 				'yaw': self.float(),
 				'pitch': self.float(),
 				'on_ground': self.boolean()
 			}
-		if packet == 0x0e:
+		if packet == 0x07: # Player Digging
 			return {'id': packet,
 				'status': self.byte(),
 				'x': self.int(),
-				'y': self.byte(),
+				'y': self.ubyte(),
 				'z': self.int(),
 				'face': self.byte()
-		}
-		if packet == 0x0f:
+			}
+		if packet == 0x08: # Player Block Placement
 			return {'id': packet,
 				'x': self.int(),
 				'y': self.ubyte(),
@@ -725,77 +692,97 @@ class PacketRecv:
 				'cursor_y': self.byte(),
 				'cursor_z': self.byte()
 			}
-		if packet == 0x10:
+		if packet == 0x09: # Held Item Change
 			return {'id': packet,
-				'slot_id': self.short()
+				'slot': self.short()
 			}
-		if packet == 0x11:
-			return {'id': packet,
-				'entity_id': self.int(),
-				'unknown': self.byte(),
-				'bed_x': self.int(),
-				'bed_y': self.byte(),
-				'bed_z': self.int()
-			}
-		if packet == 0x12:
+		if packet == 0x0A: # Animation
 			return {'id': packet,
 				'entity_id': self.int(),
 				'animation': self.byte()
 			}
-		if packet == 0x13:
+		if packet == 0x0B: # Entity Action
 			return {'id': packet,
 				'entity_id': self.int(),
 				'action_id': self.byte(),
-				'jumpboost': self.int()
+				'jump_boost': self.int()
 			}
-		if packet == 0x65:
+		if packet == 0x0C: # Steer Vehicle
+			return {'id': packet,
+				'sideways': self.float(),
+				'forward': self.float(),
+				'jump': self.boolean(),
+				'unmount': self.boolean()
+			}
+		if packet == 0x0D: # Close Window
 			return {'id': packet,
 				'window_id': self.byte()
 			}
-		if packet == 0xca:
+		if packet == 0x0E: # Click Window
+			return {'id': packet,
+				'window_id': self.byte(),
+				'slot': self.short(),
+				'button': self.byte(),
+				'action_number': self.short(),
+				'mode': self.byte(),
+				'clicked_item': self.slot()
+		}
+		if packet == 0x0F: # Confirm Transaction
+			return {'id': packet,
+				'window_id': self.byte(),
+				'action_number': self.short(),
+				'accepted': self.boolean()
+			}
+		if packet == 0x10: # Creative Inventory Action
+			return {'id': packet,
+				'slot': self.short(),
+				'clicked_item': self.slot()
+			}
+		if packet == 0x11: # Enchant Item
+			return {'id': packet,
+				'window_id': self.byte(),
+				'enchantment': self.byte()
+			}
+		if packet == 0x12: # Update Sign
+			return {'id': packet,
+				'x': self.int(),
+				'y': self.short(),
+				'z': self.int(),
+				'line1': self.string(),
+				'line2': self.string(),
+				'line3': self.string(),
+				'line4': self.string()
+			}
+		if packet == 0x13: # Player Abilities
 			return {'id': packet,
 				'flags': self.byte(),
 				'flying_speed': self.float(),
 				'walking_speed': self.float()
 			}
-		if packet == 0xcb:
+		if packet == 0x14: # Tab-Complete
 			return {'id': packet,
-				'text': self.string16()
+				'text': self.string()
 			}
-		if packet == 0xcc:
+		if packet == 0x15: # Client Settings
 			return {'id': packet,
-				'locale:': self.string16(),
+				'locale': self.string(),
 				'view_distance': self.byte(),
 				'chat_flags': self.byte(),
+				'chat_colours': self.boolean(),
 				'difficulty': self.byte(),
 				'show_cape': self.boolean()
 			}
-		if packet == 0xcd:
+		if packet == 0x16: # Client Status
 			return {'id': packet,
-				'payload': self.byte()
+				'action_id': self.byte()
 			}
-		if packet == 0x6b:
-			return {'id': packet,
-				'slot': self.short(),
-				'item': self.slot()
-			}
-		if packet == 0xfa:
-			channel = self.string16()
+		if packet == 0x17: # Plugin Message
+			channel = self.string()
 			length = self.short()
 			data = self.socket.recv(length)
-			#for i in range(length):
-			#	data += str(self.byte())
 			return {'id': packet,
 				'channel': channel,
 				'length': length,
 				'data': data
-			}
-		if packet == 0xfe:
-			return {'id': packet,
-				'magic': self.byte()
-			}
-		if packet == 0xff:
-			return {'id': packet,
-				'reason': self.string16()
 			}
 		return {'id': 'invalid', 'packet': packet}
