@@ -1,4 +1,4 @@
-import packets, struct, random, threading, time, traceback, zlib, string, builtin_commands, math, terrain_generators, chunk
+import packets, struct, random, threading, time, traceback, zlib, string, builtin_commands, math, terrain_generators, chunk, json, md5
 class Prepare:
 	def __init__(self, socket, addr, world, server):
 		self.socket = socket
@@ -8,6 +8,8 @@ class Prepare:
 		self.abort = False
 		self.packetRecv = packets.PacketRecv(socket)
 		self.packetSend = packets.PacketSend(socket)
+		self.post_login = False
+		self.pre_login_state = 0
 	def wrap(self):
 		try:
 				self.listen()
@@ -15,39 +17,68 @@ class Prepare:
 				pass
 	def listen(self):
 		while True:
-				try:
-					packet = self.packetRecv.parse()
-				except Exception, e:
-					error = traceback.format_exc()
-					for line in error.split('\n'):
-						self.server.log.error(line)
-					self.server.log.error('%s lost connection' % self.addr[0])
-					return False
-				if packet['id'] == 'invalid':
-					print "invalid packet ID %s" % str(struct.pack('B', packet['packet']).encode('hex'))
-					self.packetSend.kick('Invalid Packet %s' % str(struct.pack('B', packet['packet'])).encode('hex'))
-					self.abort = True
-					return False
-				if packet['id'] == 0x02:
-					self.username = packet['username']
-					if self.username in self.server.players:
-						try:
-							self.server.players[self.username].disconnect(reason='Logged in from another location')
-						except:
-							pass
-					self.packetSend.login_request(entity_id=25, game_mode=1)
-					self.packetSend.spawn_position(*self.world.spawnPoint)
-					# Let's do some testing.. (Tests failed)
-					self.packetSend.map_chunk_bulk()
-					#chunk_bulk = open('packet0x38.bin', 'rb')
-					#self.socket.send(chunk_bulk.read())
-					self.packetSend.player_position_look(x=self.world.spawnPoint[0], ystance=self.world.spawnPoint[1], stancey=self.world.spawnPoint[1], z=self.world.spawnPoint[2])
-					break
-				if packet['id'] == 0xfa:
-					# MC|PingHost is how the client's server list is populated with data. 
-					if packet['channel'].startswith('MC|PingHos'):
-						self.packetSend.kick(u'\u0000'.join([u'\xa71', '74', '1.6.2', self.server.config['server-name'], str(len(self.server.get_players())), str(self.server.config['max-players'])]))
-						self.abort = True
+			if not self.post_login:
+				packet = self.packetRecv.ubyte()
+				if packet == 0x0F:
+					parsed = self.packetRecv.parse(0x0F, False)
+					self.packetSend.confirm_transaction(parsed["window_id"], parsed["action_number"], True)
+				elif self.pre_login_state == 1: # Status
+					if packet == 0x00:
+						json_response = json.dumps({'version':	{
+													'name': '1.7.6',
+												 	'protocol': '5'
+											},
+											'players':	{
+													'max': self.server.config['max-players'],
+													'online': len(self.server.players),
+											},
+											'description': {
+													'text': self.server['server-name'],
+											}})
+						self.packetSend.response(json_response)
+					elif packet == 0x01:
+						time = self.packetRecv.long()
+						self.packetSend.ping(time)
+						return False
+					else:
+
+						message = "Received illegal Packet ID %s at pre-login state 1" % str(struct.pack('B', packet)).encode('hex')
+						print message
+						self.packetSend.disconnect(message)
+						return False
+				elif self.pre_login_state == 2: # Login
+					if packet == 0x00:
+						self.username = self.packetRecv.string()
+						if self.username in self.server.players:
+							try:
+								self.server.players[self.username].disconnect(reason='Logged in from another location')
+							except:
+								pass
+						m = md5.new()
+						m.update(self.username)
+						self.packetSend.login_success(m.digest(), self.username)
+						self.packetSend.login_request(entity_id=25, game_mode=1)
+						self.packetSend.spawn_position(*self.world.spawnPoint)
+						self.packetSend.map_chunk_bulk()
+						self.packetSend.player_position_look(x=self.world.spawnPoint[0], ystance=self.world.spawnPoint[1], stancey=self.world.spawnPoint[1], z=self.world.spawnPoint[2])
+						break
+					else:
+						message = "Online mode login currently not implemented"
+						self.packetSend.disconnect(message)
+						return False
+				else: # Handshake
+					if packet == 0x00:
+						handshake = {'id': packet,
+							'protocol_version': self.packetRecv.varint(),
+							'address': self.packetRecv.string(),
+							'port': self.packetRecv.ushort(),
+							'next_state': self.packetRecv.varint()
+						} # Left extra keys in case we want to do some logging or something like that
+						self.pre_login_state == handshake["next_state"]
+					else:
+						message = "Received illegal Packet ID %s at pre-login stage" % str(struct.pack('B', packet)).encode('hex')
+						print message
+						self.packetSend.disconnect(message)
 						return False
 		#id = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(16))
 		self.server.players[self.username] = Player(self.socket, self.addr, self.world, self.server)
@@ -71,15 +102,15 @@ class Player:
 		self.x = self.world.spawnPoint[0]
 		self.y = self.world.spawnPoint[1]
 		self.z = self.world.spawnPoint[2]
-		
+
 		#Ping calculation and keepalive variables.
 		self.ping = 0
-		
+
 		#Send the first keepalive.
 		self.last_keepalive_time = time.time()
 		self.last_sent_keepalive = random.randrange(0, 99999)
 		self.packetSend.keepalive(self.last_sent_keepalive)
-		
+
 	def info(self):
 		pass
 	def disconnect(self, reason=''):
@@ -199,10 +230,10 @@ class Player:
 				#print (self.server.world.level['time'] / 24000.0)
 				#Keepalive gets sent once in __init__ and goes on when we receive another keepalive.
 				#self.packetSend.time_update(random.randrange(25, 59), random.randrange(0, 12000))
-				
+
 				#Plugin API Packet Handler call.
 				self.server.EventManager.Packet_Recv_Event(self.server, self, packet)
-				
+
 				self.packetSend.time_update(self.server.world.level['time'], math.floor((self.server.world.level['time'] / 24000.0) % 1 * 24000))
 				self.updatePos()
 				if packet['id'] == 0x00:
@@ -216,19 +247,19 @@ class Player:
 					else:
 						print "Got wrong keepalive " + str(packet['keepalive']) + " from " + self.username + " (expecting " + str(self.last_sent_keepalive) + ")"
 						self.disconnect("Got wrong keepalive.")
-				
+
 				if packet['id'] == 0x03:
 					#print "<%s> %s" % (self.username, packet['message'].encode('hex'))
 					if packet['message'][0] == '/':
 						# The message is a command
-						
+
 						self.server.log.info("%s issued command: %s" % (self.username, packet['message']))
 						splitted = packet["message"].split()
 						command = splitted[0].lstrip("/")
 						arguments = splitted[1:]
-						
+
 						self.server.EventManager.Command_Event(self.server, self, command, arguments)
-						
+
 						# temporary debug commands to figure out how SMP chunk data works
 						# using 0x31s instead of a 0x38 could be causing the slow fill on client side
 						if command == "randblocks":
@@ -353,7 +384,7 @@ class Player:
 						elif command == 'wack':
 								self.packetSend.chat(u'&'+str(random.randrange(0,9))+'Type /blocks to see terrain! (for whatever reason, this fails to work on-connect as it crashes the game)')
 								self.packetSend.chat('Done.')
-						else: 
+						else:
 							# New command interface.
 							# Putting this here prevents it from catching any of the commands still implemented here.
 							builtin_commands.run_command(self, command, arguments)

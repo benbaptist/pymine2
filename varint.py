@@ -13,12 +13,12 @@ def pack_varint(val):
         total += struct.pack('B', bits)
     return total
 
-def unpack_varint(buff):
+def unpack_varint(sock):
     total = 0
     shift = 0
     val = 0x80
     while val&0x80:
-        val = struct.unpack('B', buff.read(1))[0]
+        val = struct.unpack('B', sock.recv(1))[0]
         total |= ((val&0x7F)<<shift)
         shift += 7
         if total&(1<<31):
